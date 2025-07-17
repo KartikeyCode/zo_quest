@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <title>Zo House Events Calendar</title>
+    
+    <!-- External Stylesheets -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <header class="main-header">
+    </header>
+
+    <div id="center-panel">
+      <div id="location-info">
+        <span class="location-name">Zo House Events Calendar</span>
+      </div>
+    </div>
+
+    <div id="list-container">
+        <div class="list-header">
+            <div class="search-bar">
+                <input type="text" placeholder="Search" id="search-input">
+            </div>
+            <div class="mobile-filters">
+                <button class="filter-btn active" data-filter="dates">All Dates ▼</button>
+                <button class="filter-btn" data-filter="events">All Events ▼</button>
+            </div>
+            <button class="view-all-btn">View All</button>
+        </div>
+        <ul id="event-list"></ul>
+    </div>
+
+    <!-- Calendar Overlay -->
+    <div id="calendar-overlay" class="calendar-overlay" style="display: none;">
+      <div class="calendar-content">
+        <div class="calendar-header">
+          <h2>All Events Calendar</h2>
+          <button class="close-calendar-btn">×</button>
+        </div>
+        <div class="calendar-nav">
+          <button class="nav-btn prev-month">‹</button>
+          <span class="current-month"></span>
+          <button class="nav-btn next-month">›</button>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-days-header">
+            <div class="day-header">Sun</div>
+            <div class="day-header">Mon</div>
+            <div class="day-header">Tue</div>
+            <div class="day-header">Wed</div>
+            <div class="day-header">Thu</div>
+            <div class="day-header">Fri</div>
+            <div class="day-header">Sat</div>
+          </div>
+          <div class="calendar-days" id="calendar-days"></div>
+        </div>
+        <div class="calendar-event-details" id="calendar-event-details" style="display: none;">
+          <h3>Events for <span id="selected-date"></span></h3>
+          <div id="day-events"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="location-loading" class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p>Requesting your location...</p>
+        <small>Please allow location access for the best experience</small>
+        <button id="manual-location-btn" class="manual-location-button" style="display: none;">
+          📍 Try Location Again
+        </button>
+      </div>
+    </div>
+
+    <!-- External Scripts -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
