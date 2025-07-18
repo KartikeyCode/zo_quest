@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+function initializeApp() {
   // =====================================
   // Configuration and Setup
   // =====================================
@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const defaultCenter = [77.6413, 12.9141]; // Bangalore, Karnataka
   let mapCenter = defaultCenter;
   let userLocationCoords = null;
+  let map = null; // Global map variable
 
   // =====================================
   // Geolocation Functions
@@ -94,6 +95,14 @@ document.addEventListener("DOMContentLoaded", function () {
   // Try to get user location, fallback to default if not available
   const loadingOverlay = document.getElementById("location-loading");
   
+  // Simplified loading screen logic - hide after 3 seconds regardless
+  setTimeout(() => {
+    loadingOverlay.style.display = 'none';
+    if (!map) {
+      initializeMap();
+    }
+  }, 3000);
+  
   getUserLocation()
     .then((userLocation) => {
       mapCenter = userLocation;
@@ -103,12 +112,15 @@ document.addEventListener("DOMContentLoaded", function () {
       mapCenter = defaultCenter;
     })
     .finally(() => {
-      loadingOverlay.classList.add('hidden');
-      initializeMap();
+      // Hide loading screen and initialize map
+      loadingOverlay.style.display = 'none';
+      if (!map) {
+        initializeMap();
+      }
     });
 
   function initializeMap() {
-  const map = new mapboxgl.Map({
+  map = new mapboxgl.Map({
     container: "map",
       center: mapCenter,
     zoom: initialZoom,
@@ -223,11 +235,16 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Create popup content
+        const registerButton = row["Event URL"] ? 
+            `<a href="${row["Event URL"]}" target="_blank" class="popup-register-btn">Register Now</a>` : 
+            '';
+            
         const popupContent = `
           <div class="glass-popup">
             <h3>${row["Event Name"] || "N/A"}</h3>
             <p>📅 ${formattedDate}</p>
             <p>📍 ${row.Location || "N/A"}</p>
+            ${registerButton}
           </div>
         `;
 
@@ -245,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const listItem = document.createElement("li");
         listItem.className = "event-item";
         
-        const registerButton = row["Event URL"] ? 
+        const listRegisterButton = row["Event URL"] ? 
             `<a href="${row["Event URL"]}" target="_blank" class="register-btn" onclick="event.stopPropagation()">Register</a>` : 
             '';
         
@@ -255,7 +272,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <p class="event-date">📅 ${formattedDate}</p>
               <p class="event-location">📍 ${row.Location || "N/A"}</p>
           </div>
-          ${registerButton}
+          ${listRegisterButton}
         `;
         
         eventList.appendChild(listItem);
@@ -591,7 +608,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // =====================================
     
     let currentCalendarDate = new Date();
-    let selectedDate = null;
     
     function openCalendarView() {
         const calendarOverlay = document.getElementById('calendar-overlay');
@@ -603,8 +619,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function closeCalendarView() {
         const calendarOverlay = document.getElementById('calendar-overlay');
         calendarOverlay.style.display = 'none';
-        const eventDetails = document.getElementById('calendar-event-details');
-        eventDetails.style.display = 'none';
     }
     
     function setupCalendarEventListeners() {
@@ -683,7 +697,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const eventItems = dayEvents.slice(0, 3).map(event => {
                 const eventName = event['Event Name'];
                 const truncatedName = eventName.length > 20 ? eventName.substring(0, 17) + '...' : eventName;
-                return `<div class="calendar-event-preview">${truncatedName}</div>`;
+                const eventUrl = event['Event URL'];
+                
+                if (eventUrl) {
+                    return `<a href="${eventUrl}" target="_blank" class="calendar-event-preview clickable">${truncatedName}</a>`;
+                } else {
+                    return `<div class="calendar-event-preview">${truncatedName}</div>`;
+                }
             }).join('');
             
             const moreEventsIndicator = dayEvents.length > 3 ? 
@@ -697,55 +717,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             `;
             
-            dayElement.onclick = () => {
-                // Remove previous selection
-                document.querySelectorAll('.calendar-day.selected').forEach(day => {
-                    day.classList.remove('selected');
-                });
-                
-                // Add selection to clicked day
-                dayElement.classList.add('selected');
-                selectedDate = date;
-                showDayEvents(date, dayEvents);
-            };
+            // Remove click handler since events are now directly clickable
+            // dayElement.onclick = () => { ... } - REMOVED
             
             calendarDays.appendChild(dayElement);
         }
     }
-    
-    function showDayEvents(date, events) {
-        const eventDetails = document.getElementById('calendar-event-details');
-        const selectedDateSpan = document.getElementById('selected-date');
-        const dayEventsContainer = document.getElementById('day-events');
-        
-        selectedDateSpan.textContent = date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        if (events.length === 0) {
-            dayEventsContainer.innerHTML = '<p>No events scheduled for this day.</p>';
-    } else {
-            dayEventsContainer.innerHTML = events.map(event => {
-                const eventTime = new Date(event['Date & Time']).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                });
-                
-                return `
-                    <div class="calendar-event-item">
-                        <h4>${event['Event Name']}</h4>
-                        <p>📅 ${eventTime}</p>
-                        <p>📍 ${event.Location}</p>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        eventDetails.style.display = 'block';
-    }
   }
-});
+}
+
+// Check if DOM is already loaded, otherwise wait for it
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
