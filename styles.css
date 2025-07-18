@@ -470,9 +470,48 @@ html {
    ===================================== */
 
 @media (max-width: 768px) {
-  /* Adjust map container to take 3/4 of screen */
+  /* CSS custom properties for viewport calculations */
+  :root {
+    --vh: 1vh;
+    --mobile-vh: 100vh;
+    --available-height: 100vh;
+  }
+
+  /* Ensure full app fits in available viewport, accounting for browser UI */
+  body, html {
+    height: 100vh;
+    height: calc(var(--available-height, 100vh)); /* Use custom property */
+    height: 100dvh; /* Dynamic viewport height - excludes browser UI */
+    height: -webkit-fill-available; /* Fallback for older WebKit browsers */
+    overflow: hidden;
+  }
+
+  /* Additional mobile browser fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific fixes */
+    body, html {
+      height: -webkit-fill-available;
+    }
+    
+    #map-container {
+      height: -webkit-fill-available;
+      height: calc(-webkit-fill-available * 0.75);
+    }
+  }
+
+  /* Prevent scrolling and bounce on mobile */
+  body {
+    position: fixed;
+    width: 100%;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Adjust map container to take 3/4 of available screen */
   #map-container {
-    height: 75vh; /* 3/4 of viewport height */
+    height: 75vh;
+    height: calc(var(--available-height, 100vh) * 0.75); /* Use custom property */
+    height: 75dvh; /* Use dynamic viewport height to avoid browser nav overlap */
     position: relative;
   }
 
@@ -516,16 +555,21 @@ html {
   #list-container {
     position: fixed !important;
     top: 75vh !important; /* Start where map ends */
+    top: calc(var(--available-height, 100vh) * 0.75) !important; /* Use custom property */
+    top: 75dvh !important; /* Use dynamic viewport height */
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     width: 100% !important;
     height: 25vh !important; /* 1/4 of viewport height */
+    height: calc(var(--available-height, 100vh) * 0.25) !important; /* Use custom property */
+    height: 25dvh !important; /* Use dynamic viewport height */
     transform: none !important;
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0); /* Account for home indicator on iOS */
     border-radius: 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     display: flex !important;

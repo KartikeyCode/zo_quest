@@ -7,6 +7,29 @@ function initializeApp() {
     return window.innerWidth <= 768;
   }
 
+  // =====================================
+  // Mobile Viewport Height Fix
+  // =====================================
+  
+  function setMobileViewportHeight() {
+    if (isMobile()) {
+      // Calculate actual viewport height accounting for browser UI
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty('--mobile-vh', `${window.innerHeight}px`);
+      document.documentElement.style.setProperty('--available-height', `${window.innerHeight}px`);
+    }
+  }
+
+  // Set initial viewport height
+  setMobileViewportHeight();
+
+  // Update on resize and orientation change
+  window.addEventListener('resize', setMobileViewportHeight);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(setMobileViewportHeight, 100); // Small delay for orientation change
+  });
+
   mapboxgl.accessToken = "pk.eyJ1Ijoia3VzaGFsem8iLCJhIjoiY20wcDZtNjUwMDFxNzJpcjYxZjlsN2g3NiJ9.d194ACznKNqKJNfzKyanNQ";
 
   const initialZoom = isMobile() ? 12.5 : 18.5;
