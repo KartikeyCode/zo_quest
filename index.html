@@ -25,20 +25,27 @@
 
     <div id="center-panel">
       <div id="location-info">
-        <span class="location-name">Zo House Events Calendar</span>
+        <img src="Z_to_House.gif" alt="Zo House Events Calendar" class="logo-gif">
       </div>
     </div>
 
     <div id="list-container">
         <div class="list-header">
-            <div class="search-bar">
-                <input type="text" placeholder="Search" id="search-input">
+            <div class="location-filters">
+                <button class="location-filter-btn active" data-location="all">All Locations</button>
+                <button class="location-filter-btn" data-location="bangalore">Bangalore</button>
+                <button class="location-filter-btn" data-location="sanfrancisco">San Francisco</button>
+            </div>
+            <div class="search-and-view">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search" id="search-input">
+                </div>
+                <button class="view-all-btn">View All</button>
             </div>
             <div class="mobile-filters">
                 <button class="filter-btn active" data-filter="dates">All Dates ▼</button>
                 <button class="filter-btn" data-filter="events">All Events ▼</button>
             </div>
-            <button class="view-all-btn">View All</button>
         </div>
         <ul id="event-list"></ul>
     </div>

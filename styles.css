@@ -108,6 +108,21 @@ html {
     margin-bottom: 10px;
     color: white;
     text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-gif {
+    height: 60px;
+    width: auto;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+    transition: all 0.3s ease;
+}
+
+.logo-gif:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
 }
 
 .tagline {
@@ -134,16 +149,30 @@ html {
 
 .list-header {
     display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.location-filters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-and-view {
+    display: flex;
     gap: 10px;
     align-items: center;
 }
 
-.mobile-filters {
-    display: none; /* Hidden by default on desktop */
-}
-
 .search-bar {
     flex-grow: 1;
+}
+
+.mobile-filters {
+    display: none; /* Hidden by default on desktop */
 }
 
 .search-bar input {
@@ -152,6 +181,30 @@ html {
     border: 1px solid var(--secondary-color);
     border-radius: 8px;
     background-color: var(--primary-color);
+}
+
+.location-filter-btn {
+    padding: 8px 12px;
+    border: 1px solid var(--secondary-color);
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.location-filter-btn:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--accent-color);
+}
+
+.location-filter-btn.active {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border-color: var(--accent-color);
 }
 
 .view-all-btn, .date-filter select {
@@ -235,6 +288,16 @@ html {
   text-decoration: none;
   font-weight: 500;
   flex-shrink: 0;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  border: 1px solid var(--accent-color);
+}
+
+.register-btn:hover {
+  background-color: var(--purple-accent);
+  border-color: var(--purple-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
 }
 
 
@@ -417,6 +480,11 @@ html {
     line-height: 1.2;
     text-align: center;
   }
+
+  .logo-gif {
+    height: 50px;
+    width: auto;
+  }
   
   /* Horizontal scrolling events at bottom */
   #list-container {
@@ -443,10 +511,22 @@ html {
   .list-header {
     padding: 12px 20px 8px 20px;
     margin-bottom: 0;
-    gap: 12px;
+    gap: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
     display: flex !important;
+    flex-direction: column;
+  }
+
+  .location-filters {
+    display: flex !important;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .search-and-view {
+    display: flex !important;
+    gap: 8px;
     align-items: center;
   }
   
@@ -482,6 +562,37 @@ html {
   
   .mobile-filters {
     display: none !important;
+  }
+
+  .location-filters {
+    display: flex !important;
+    gap: 6px;
+    margin-left: 8px;
+  }
+
+  .location-filter-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    border-radius: 12px;
+    min-height: 28px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .location-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+
+  .location-filter-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-color);
+    border-color: var(--accent-color);
   }
 
   .view-all-btn {
@@ -590,6 +701,29 @@ html {
   .event-details p.event-date,
   .event-details p.event-location {
     display: none; /* Hide date and location on mobile cards */
+  }
+
+  .register-btn {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-color);
+    color: var(--primary-color);
+    border: 1px solid var(--accent-color);
+    padding: 4px 8px;
+    font-size: 0.6rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+  }
+
+  .register-btn:hover {
+    background: var(--purple-accent);
+    border-color: var(--purple-accent);
+    transform: translateX(-50%) translateY(-1px);
   }
 }
 

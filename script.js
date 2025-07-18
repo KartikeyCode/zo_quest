@@ -245,12 +245,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const listItem = document.createElement("li");
         listItem.className = "event-item";
         
+        const registerButton = row["Event URL"] ? 
+            `<a href="${row["Event URL"]}" target="_blank" class="register-btn" onclick="event.stopPropagation()">Register</a>` : 
+            '';
+        
         listItem.innerHTML = `
           <div class="event-details">
               <h3>${row["Event Name"] || "N/A"}</h3>
               <p class="event-date">📅 ${formattedDate}</p>
               <p class="event-location">📍 ${row.Location || "N/A"}</p>
           </div>
+          ${registerButton}
         `;
         
         eventList.appendChild(listItem);
@@ -276,6 +281,55 @@ document.addEventListener("DOMContentLoaded", function () {
             const location = (event['Location'] || '').toLowerCase();
             return eventName.includes(lowerCaseSearchTerm) || location.includes(lowerCaseSearchTerm);
         });
+        addMarkersAndListItems(filtered);
+    }
+
+    function filterEventsByLocation(locationFilter, searchTerm = '') {
+        let filtered = allEvents;
+        
+        // Apply location filter
+        if (locationFilter !== 'all') {
+            if (locationFilter === 'bangalore') {
+                filtered = filtered.filter(event => {
+                    const location = (event['Location'] || '').toLowerCase();
+                    return location.includes('bangalore') || 
+                           location.includes('koramangala') || 
+                           location.includes('anaa infra') ||
+                           location.includes('nirguna mandir');
+                });
+            } else if (locationFilter === 'sanfrancisco') {
+                filtered = filtered.filter(event => {
+                    const location = (event['Location'] || '').toLowerCase();
+                    const isStanFrancisco = location.includes('san francisco') || 
+                                          location.includes('sf') || 
+                                          location.includes('zo house') || 
+                                          location.includes('300 4th st') ||
+                                          location.includes('4th street') ||
+                                          location.includes('california') ||
+                                          location.includes('ca 94107') ||
+                                          location.includes('usa');
+                    
+                    // Exclude Bangalore locations that might contain similar keywords
+                    const isBangalore = location.includes('bangalore') || 
+                                       location.includes('koramangala') || 
+                                       location.includes('anaa infra') ||
+                                       location.includes('nirguna mandir');
+                    
+                    return isStanFrancisco && !isBangalore;
+                });
+            }
+        }
+        
+        // Apply search filter if search term exists
+        if (searchTerm) {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+            filtered = filtered.filter(event => {
+                const eventName = (event['Event Name'] || '').toLowerCase();
+                const location = (event['Location'] || '').toLowerCase();
+                return eventName.includes(lowerCaseSearchTerm) || location.includes(lowerCaseSearchTerm);
+            });
+        }
+        
         addMarkersAndListItems(filtered);
     }
 
@@ -311,13 +365,26 @@ document.addEventListener("DOMContentLoaded", function () {
                     currentEvent.summary = value;
                 } else if (key.startsWith('LOCATION')) {
                     currentEvent.location = value.replace(/\\,/g, ',');
+                } else if (key.startsWith('URL')) {
+                    currentEvent.url = value;
+                } else if (key.startsWith('DESCRIPTION')) {
+                    currentEvent.description = value.replace(/\\n/g, '\n');
+                    // Check if description contains the real Luma URL
+                    const lumaUrlMatch = value.match(/https:\/\/lu\.ma\/([a-zA-Z0-9]+)/);
+                    if (lumaUrlMatch) {
+                        currentEvent.realLumaUrl = lumaUrlMatch[0];
+                    }
+                } else if (key.startsWith('UID')) {
+                    currentEvent.uid = value;
+                    // Extract Luma event ID from UID for URL construction
+                    const lumaEventMatch = value.match(/evt-([a-zA-Z0-9]+)/);
+                    if (lumaEventMatch) {
+                        currentEvent.lumaEventId = lumaEventMatch[1];
+                    }
                 } else if (key.startsWith('ORGANIZER')) {
                     // Extract organizer/host information
                     const organizerMatch = value.match(/CN=([^;:]+)/);
                     currentEvent.organizer = organizerMatch ? organizerMatch[1] : value;
-                } else if (key.startsWith('DESCRIPTION')) {
-                    // Look for host information in description
-                    currentEvent.description = value.replace(/\\n/g, '\n');
                 } else if (key.startsWith('GEO')) {
                     const [lat, lon] = value.split(';');
                     const parsedLat = parseFloat(lat);
@@ -366,8 +433,21 @@ document.addEventListener("DOMContentLoaded", function () {
             }));
 
             let parsedEvents = [];
-            icsDataArray.forEach(icsData => {
-                parsedEvents = parsedEvents.concat(parseICS(icsData));
+            calendarUrls.forEach((calendarUrl, index) => {
+                const icsData = icsDataArray[index];
+                const eventsFromCalendar = parseICS(icsData);
+                
+                // Extract calendar ID from the URL for constructing event URLs
+                const calendarIdMatch = calendarUrl.match(/id=cal-([a-zA-Z0-9]+)/);
+                const calendarId = calendarIdMatch ? calendarIdMatch[1] : null;
+                
+                // Add calendar context to each event
+                eventsFromCalendar.forEach(event => {
+                    event.calendarId = calendarId;
+                    event.calendarUrl = calendarUrl;
+                });
+                
+                parsedEvents = parsedEvents.concat(eventsFromCalendar);
             });
 
             const now = new Date();
@@ -402,13 +482,47 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
                 
+                // Construct Luma URL - Look for real URL first
+                let eventUrl = null;
+                
+                // Priority 1: Real Luma URL found in description
+                if (e.realLumaUrl) {
+                    eventUrl = e.realLumaUrl;
+                }
+                // Priority 2: Direct URL field
+                else if (e.url && e.url.includes('lu.ma')) {
+                    eventUrl = e.url;
+                }
+                // Priority 3: Try to construct from UID (backup)
+                else if (e.uid) {
+                    // Only try this as last resort since it gives wrong URLs
+                    const uidPatterns = [
+                        /evt-([a-zA-Z0-9]+)/,  // evt-XXXXX pattern
+                    ];
+                    
+                    for (const pattern of uidPatterns) {
+                        const match = e.uid.match(pattern);
+                        if (match) {
+                            const eventId = match[1];
+                            eventUrl = `https://lu.ma/evt-${eventId}`;
+                            break;
+                        }
+                    }
+                }
+                
+                // Fallback: if we have calendar ID, link to calendar
+                if (!eventUrl && e.calendarId) {
+                    eventUrl = `https://lu.ma/calendar/cal-${e.calendarId}`;
+                }
+                
                 return {
                     'Event Name': e.summary || 'Untitled Event',
                     'Host': host,
                     'Date & Time': e.start.toISOString(),
                     'Location': displayLocation || e.location,
                     'Latitude': coords ? coords[1] : null,
-                    'Longitude': coords ? coords[0] : null
+                    'Longitude': coords ? coords[0] : null,
+                    'Event URL': eventUrl
                 };
             }));
 
@@ -431,7 +545,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', (e) => {
-        filterEvents(e.target.value);
+        const activeLocationFilter = document.querySelector('.location-filter-btn.active').dataset.location;
+        filterEventsByLocation(activeLocationFilter, e.target.value);
+    });
+
+    // Location filter functionality
+    const locationFilterBtns = document.querySelectorAll('.location-filter-btn');
+    locationFilterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons
+            locationFilterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            btn.classList.add('active');
+            
+            // Get current search term and apply both filters
+            const searchTerm = searchInput.value;
+            const locationFilter = btn.dataset.location;
+            filterEventsByLocation(locationFilter, searchTerm);
+        });
     });
 
     const viewAllBtn = document.querySelector('.view-all-btn');
