@@ -470,6 +470,17 @@ html {
    ===================================== */
 
 @media (max-width: 768px) {
+  /* Adjust map container to take 3/4 of screen */
+  #map-container {
+    height: 75vh; /* 3/4 of viewport height */
+    position: relative;
+  }
+
+  #map {
+    height: 100%;
+    width: 100%;
+  }
+
   /* Header adjustments */
   .main-header {
     left: 20px;
@@ -501,14 +512,15 @@ html {
     width: auto;
   }
   
-  /* Horizontal scrolling events at bottom */
+  /* Events list takes 1/4 of screen at bottom */
   #list-container {
     position: fixed !important;
-    top: auto !important;
+    top: 75vh !important; /* Start where map ends */
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     width: 100% !important;
+    height: 25vh !important; /* 1/4 of viewport height */
     transform: none !important;
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(20px);
@@ -516,21 +528,22 @@ html {
     padding: 0;
     border-radius: 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    height: 170px; /* Reduced height to prevent cutoff */
     display: flex !important;
     z-index: 100;
     flex-direction: column;
+    overflow: hidden;
   }
 
   /* Compact header */
   .list-header {
-    padding: 12px 20px 8px 20px;
+    padding: 8px 15px 6px 15px;
     margin-bottom: 0;
-    gap: 8px;
+    gap: 6px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
     display: flex !important;
     flex-direction: column;
+    min-height: auto;
   }
 
   .location-filters {
@@ -552,15 +565,15 @@ html {
 
   .search-bar input {
     width: 100%;
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 6px 10px;
+    font-size: 13px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
+    border-radius: 14px;
     background: rgba(255, 255, 255, 0.1);
     color: white;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    min-height: 32px;
+    min-height: 28px;
     font-weight: 400;
   }
 
@@ -589,10 +602,10 @@ html {
     background: rgba(255, 255, 255, 0.15);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 10px;
-    font-size: 0.7rem;
-    border-radius: 12px;
-    min-height: 28px;
+    padding: 4px 8px;
+    font-size: 0.65rem;
+    border-radius: 10px;
+    min-height: 24px;
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
@@ -614,10 +627,10 @@ html {
     background: rgba(255, 255, 255, 0.15);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 16px;
-    font-size: 0.8rem;
-    border-radius: 16px;
-    min-height: 32px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    border-radius: 14px;
+    min-height: 28px;
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
@@ -638,12 +651,13 @@ html {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     margin: 0;
-    padding: 12px 20px; /* Adjusted padding */
+    padding: 8px 15px; /* Reduced padding for better space usage */
     list-style: none;
-    gap: 12px;
+    gap: 10px;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
     flex: 1;
+    align-items: flex-start;
   }
 
   #event-list::-webkit-scrollbar {
