@@ -15,9 +15,14 @@ function initializeApp() {
     if (isMobile()) {
       // Calculate actual viewport height accounting for browser UI
       const vh = window.innerHeight * 0.01;
+      const actualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      
       document.documentElement.style.setProperty('--vh', `${vh}px`);
       document.documentElement.style.setProperty('--mobile-vh', `${window.innerHeight}px`);
-      document.documentElement.style.setProperty('--available-height', `${window.innerHeight}px`);
+      document.documentElement.style.setProperty('--available-height', `${actualHeight}px`);
+      
+      // Force a more aggressive approach for mobile browsers
+      document.documentElement.style.setProperty('--real-vh', `${actualHeight}px`);
     }
   }
 
@@ -29,6 +34,11 @@ function initializeApp() {
   window.addEventListener('orientationchange', () => {
     setTimeout(setMobileViewportHeight, 100); // Small delay for orientation change
   });
+  
+  // Listen for visual viewport changes (mobile browser address bar)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setMobileViewportHeight);
+  }
 
   mapboxgl.accessToken = "pk.eyJ1Ijoia3VzaGFsem8iLCJhIjoiY20wcDZtNjUwMDFxNzJpcjYxZjlsN2g3NiJ9.d194ACznKNqKJNfzKyanNQ";
 
@@ -239,6 +249,9 @@ function initializeApp() {
       .replace(" at", "•");
   }
 
+  // Track open popups to manage auto-close behavior
+  let currentOpenPopup = null;
+
   function addMarkersAndListItems(data) {
     const eventList = document.getElementById("event-list");
     eventList.innerHTML = '';
@@ -273,13 +286,28 @@ function initializeApp() {
 
         const popup = new mapboxgl.Popup({
             className: 'glass-popup-container',
-            closeButton: true, // Re-enabling close button for usability
-            offset: 25
+            closeButton: true,
+            offset: [0, -15], // Reduced offset to prevent logo overlap
+            maxWidth: '280px' // Limit popup width
           })
           .setLngLat(marker.getLngLat())
           .setHTML(popupContent);
 
         marker.setPopup(popup);
+        
+        // Handle marker click to auto-close previous popups
+        marker.on('click', () => {
+          if (currentOpenPopup && currentOpenPopup !== popup) {
+            currentOpenPopup.remove();
+          }
+          currentOpenPopup = popup;
+          
+          popup.on('close', () => {
+            if (currentOpenPopup === popup) {
+              currentOpenPopup = null;
+            }
+          });
+        });
 
         // Create list item
         const listItem = document.createElement("li");
@@ -303,11 +331,26 @@ function initializeApp() {
         // Add click handler for list item
         listItem.addEventListener("click", function (e) {
           if (e.target.tagName !== "A") {
+            // Close any currently open popup
+            if (currentOpenPopup) {
+              currentOpenPopup.remove();
+            }
+            
             map.flyTo({
               center: [parseFloat(row.Longitude), parseFloat(row.Latitude)],
               zoom: 18,
             });
             popup.addTo(map);
+            
+            // Track this popup as the currently open one
+            currentOpenPopup = popup;
+            
+            // Listen for popup close events
+            popup.on('close', () => {
+              if (currentOpenPopup === popup) {
+                currentOpenPopup = null;
+              }
+            });
           }
         });
       }

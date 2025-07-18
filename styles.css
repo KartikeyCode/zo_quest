@@ -399,10 +399,12 @@ html {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   color: #2a251d;
+  max-width: 280px;
+  min-width: 200px;
 }
 
 .glass-popup-container .mapboxgl-popup-tip {
@@ -410,29 +412,31 @@ html {
 }
 
 .glass-popup h3 {
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   color: var(--text-color);
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 600;
+  line-height: 1.3;
 }
 
 .glass-popup p {
-  margin: 4px 0;
+  margin: 3px 0;
   color: var(--text-color);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   opacity: 0.8;
+  line-height: 1.2;
 }
 
 .popup-register-btn {
   display: inline-block;
   background: var(--accent-color);
   color: var(--primary-color);
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.85rem;
-  margin-top: 12px;
+  font-size: 0.75rem;
+  margin-top: 8px;
   transition: all 0.3s ease;
   border: 1px solid var(--accent-color);
 }
@@ -475,6 +479,7 @@ html {
     --vh: 1vh;
     --mobile-vh: 100vh;
     --available-height: 100vh;
+    --real-vh: 100vh;
   }
 
   /* Ensure full app fits in available viewport, accounting for browser UI */
@@ -510,6 +515,7 @@ html {
   /* Adjust map container to take 3/4 of available screen */
   #map-container {
     height: 75vh;
+    height: calc(var(--real-vh, 100vh) * 0.75); /* Use real viewport height */
     height: calc(var(--available-height, 100vh) * 0.75); /* Use custom property */
     height: 75dvh; /* Use dynamic viewport height to avoid browser nav overlap */
     position: relative;
@@ -555,6 +561,7 @@ html {
   #list-container {
     position: fixed !important;
     top: 75vh !important; /* Start where map ends */
+    top: calc(var(--real-vh, 100vh) * 0.75) !important; /* Use real viewport height */
     top: calc(var(--available-height, 100vh) * 0.75) !important; /* Use custom property */
     top: 75dvh !important; /* Use dynamic viewport height */
     left: 0 !important;
@@ -562,6 +569,7 @@ html {
     bottom: 0 !important;
     width: 100% !important;
     height: 25vh !important; /* 1/4 of viewport height */
+    height: calc(var(--real-vh, 100vh) * 0.25) !important; /* Use real viewport height */
     height: calc(var(--available-height, 100vh) * 0.25) !important; /* Use custom property */
     height: 25dvh !important; /* Use dynamic viewport height */
     transform: none !important;
