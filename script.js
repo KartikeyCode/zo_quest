@@ -231,7 +231,7 @@ function initializeApp() {
     // Event Loading and Display
     // =====================================
     
-    let allEvents = []; // Store all events to enable filtering
+    let allLocations = []; // Store all locations to enable filtering
 
   function formatDateTime(dateTimeString) {
     const date = new Date(dateTimeString);
@@ -357,18 +357,18 @@ function initializeApp() {
     });
   }
 
-    function filterEvents(searchTerm) {
+    function filterLocations(searchTerm) {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        const filtered = allEvents.filter(event => {
-            const eventName = (event['Event Name'] || '').toLowerCase();
-            const location = (event['Location'] || '').toLowerCase();
-            return eventName.includes(lowerCaseSearchTerm) || location.includes(lowerCaseSearchTerm);
+        const filtered = allLocations.filter(location => {
+            const locationName = (location['Location Name'] || '').toLowerCase();
+            const locationAddress = (location['Location'] || '').toLowerCase();
+            return locationName.includes(lowerCaseSearchTerm) || locationAddress.includes(lowerCaseSearchTerm);
         });
         addMarkersAndListItems(filtered);
     }
 
-    function filterEventsByLocation(locationFilter, searchTerm = '') {
-        let filtered = allEvents;
+    function filterLocationsByArea(areaFilter, searchTerm = '') {
+        let filtered = allLocations;
         
         // Apply location filter
         if (locationFilter !== 'all') {
@@ -417,209 +417,83 @@ function initializeApp() {
     }
 
     // =====================================
-    // iCalendar Data Fetching and Parsing
+    // Static Location Data
     // =====================================
-    
-    const calendarUrls = [
-        'https://api.lu.ma/ics/get?entity=calendar&id=cal-ZVonmjVxLk7F2oM', // Bangalore
-        'https://api.lu.ma/ics/get?entity=calendar&id=cal-3YNnBTToy9fnnjQ'  // San Francisco
-    ];
 
-    function parseICS(icsData) {
-        const events = [];
-        const lines = icsData.split(/\r\n|\n|\r/);
-        let currentEvent = null;
+    // Removed calendar parsing functions - no longer needed for static locations
 
-        lines.forEach(line => {
-            if (line.startsWith('BEGIN:VEVENT')) {
-                currentEvent = {};
-            } else if (line.startsWith('END:VEVENT')) {
-                if (currentEvent) {
-                    events.push(currentEvent);
-                }
-                currentEvent = null;
-            } else if (currentEvent) {
-                const [key, ...valueParts] = line.split(':');
-                const value = valueParts.join(':');
-
-                if (key.startsWith('DTSTART')) {
-                    currentEvent.start = new Date(value.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/, '$1-$2-$3T$4:$5:$6'));
-                } else if (key.startsWith('SUMMARY')) {
-                    currentEvent.summary = value;
-                } else if (key.startsWith('LOCATION')) {
-                    currentEvent.location = value.replace(/\\,/g, ',');
-                } else if (key.startsWith('URL')) {
-                    currentEvent.url = value;
-                } else if (key.startsWith('DESCRIPTION')) {
-                    currentEvent.description = value.replace(/\\n/g, '\n');
-                    // Check if description contains the real Luma URL
-                    const lumaUrlMatch = value.match(/https:\/\/lu\.ma\/([a-zA-Z0-9]+)/);
-                    if (lumaUrlMatch) {
-                        currentEvent.realLumaUrl = lumaUrlMatch[0];
-                    }
-                } else if (key.startsWith('UID')) {
-                    currentEvent.uid = value;
-                    // Extract Luma event ID from UID for URL construction
-                    const lumaEventMatch = value.match(/evt-([a-zA-Z0-9]+)/);
-                    if (lumaEventMatch) {
-                        currentEvent.lumaEventId = lumaEventMatch[1];
-                    }
-                } else if (key.startsWith('ORGANIZER')) {
-                    // Extract organizer/host information
-                    const organizerMatch = value.match(/CN=([^;:]+)/);
-                    currentEvent.organizer = organizerMatch ? organizerMatch[1] : value;
-                } else if (key.startsWith('GEO')) {
-                    const [lat, lon] = value.split(';');
-                    const parsedLat = parseFloat(lat);
-                    const parsedLon = parseFloat(lon);
-                    if (!isNaN(parsedLat) && !isNaN(parsedLon)) {
-                        currentEvent.geo = { lat: parsedLat, lon: parsedLon };
-                    }
-                }
-            }
-        });
-        return events;
-    }
-
-    async function geocodeLocation(locationName) {
-        if (!locationName) return null;
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationName)}.json?access_token=${mapboxgl.accessToken}`;
+    function loadStaticLocations() {
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.features && data.features.length > 0) {
-                return data.features[0].center; // [longitude, latitude]
-            }
-        } catch (error) {
-            console.error('Geocoding error:', error);
-        }
-        return null;
-    }
+            // Static location data for Zo initiative
+            const staticLocations = [
+                {
+                    'Location Name': 'Zo SF',
+                    'Host': 'Zo Team',
+                    'Date & Time': new Date().toISOString(),
+                    'Location': 'San Francisco, CA',
+                    'Latitude': 37.781903723962394,
+                    'Longitude': -122.40089759537564,
+                    'Location URL': null
+                },
+                {
+                    'Location Name': 'Zo Kora',
+                    'Host': 'Zo Team',
+                    'Date & Time': new Date().toISOString(),
+                    'Location': 'Koramangala, Bangalore',
+                    'Latitude': 12.933043207450986,
+                    'Longitude': 77.63463845876512,
+                    'Location URL': null
+                },
+                {
+                    'Location Name': 'Zo WF',
+                    'Host': 'Zo Team',
+                    'Date & Time': new Date().toISOString(),
+                    'Location': 'Whitefield, Bangalore',
+                    'Latitude': 12.972625067533576,
+                    'Longitude': 77.74648576165846,
+                    'Location URL': null
+                },
+                {
+                    'Location Name': 'Lossfunk',
+                    'Host': 'Zo Team',
+                    'Date & Time': new Date().toISOString(),
+                    'Location': 'Bangalore, Karnataka',
+                    'Latitude': 12.981365725590802,
+                    'Longitude': 77.64077028864327,
+                    'Location URL': null
+                },
+                {
+                    'Location Name': 'Shipyard',
+                    'Host': 'Zo Team',
+                    'Date & Time': new Date().toISOString(),
+                    'Location': 'Bangalore, Karnataka',
+                    'Latitude': 12.982406246118158,
+                    'Longitude': 77.64026430077156,
+                    'Location URL': null
+                },
+                {
+                    'Location Name': 'The Hub',
+                    'Host': 'Zo Team',
+                    'Date & Time': new Date().toISOString(),
+                    'Location': 'Bangalore, Karnataka',
+                    'Latitude': 12.979966981737082,
+                    'Longitude': 77.60760484972558,
+                    'Location URL': null
+                }
+            ];
 
-    async function fetchAndProcessCalendars() {
-        try {
-            const proxyUrl = 'https://proxy.cors.sh/';
-            const apiKey = 'temp_7db057c99de626add346faa324315c4d';
-
-            const responses = await Promise.all(calendarUrls.map(url => 
-                fetch(proxyUrl + url, {
-                    headers: {
-                        'x-cors-api-key': apiKey
-                    }
-                })
-            ));
-            const icsDataArray = await Promise.all(responses.map(res => {
-                if (!res.ok) {
-                    throw new Error(`CORS proxy error: ${res.status} ${res.statusText}`);
-                }
-                return res.text();
-            }));
-
-            let parsedEvents = [];
-            calendarUrls.forEach((calendarUrl, index) => {
-                const icsData = icsDataArray[index];
-                const eventsFromCalendar = parseICS(icsData);
-                
-                // Extract calendar ID from the URL for constructing event URLs
-                const calendarIdMatch = calendarUrl.match(/id=cal-([a-zA-Z0-9]+)/);
-                const calendarId = calendarIdMatch ? calendarIdMatch[1] : null;
-                
-                // Add calendar context to each event
-                eventsFromCalendar.forEach(event => {
-                    event.calendarId = calendarId;
-                    event.calendarUrl = calendarUrl;
-                });
-                
-                parsedEvents = parsedEvents.concat(eventsFromCalendar);
-            });
-
-            const now = new Date();
-            const futureEvents = parsedEvents.filter(event => event.start >= now);
-            
-            futureEvents.sort((a, b) => a.start - b.start);
-            
-            const geocodedEvents = await Promise.all(futureEvents.map(async (e) => {
-                let coords = null;
-                let displayLocation = e.location;
-                
-                if (e.geo && e.geo.lat && e.geo.lon && !isNaN(e.geo.lat) && !isNaN(e.geo.lon)) {
-                    coords = [e.geo.lon, e.geo.lat];
-                }
-                else if (e.location && e.location.toLowerCase().includes('zo house')) {
-                    coords = [-122.3943, 37.7776];
-                    displayLocation = "Zo House, 300 4th St, San Francisco";
-                } else if (e.location && (e.location.toLowerCase().includes('@ zo') || e.location.toLowerCase().includes('fifa @ zo'))) {
-                    coords = [-122.3943, 37.7776];
-                    displayLocation = "Zo House, 300 4th St, San Francisco";
-                }
-                else if (e.location && !e.location.startsWith('http')) {
-                    coords = await geocodeLocation(e.location);
-                }
-                
-                let host = e.organizer || 'TBA';
-                if (!e.organizer && e.description) {
-                    // Try to extract host from description patterns like "Hosted by X" or "Host: X"
-                    const hostMatch = e.description.match(/(?:hosted by|host:|by)\s*([^\n\r]+)/i);
-                    if (hostMatch) {
-                        host = hostMatch[1].trim();
-                    }
-                }
-                
-                // Construct Luma URL - Look for real URL first
-                let eventUrl = null;
-                
-                // Priority 1: Real Luma URL found in description
-                if (e.realLumaUrl) {
-                    eventUrl = e.realLumaUrl;
-                }
-                // Priority 2: Direct URL field
-                else if (e.url && e.url.includes('lu.ma')) {
-                    eventUrl = e.url;
-                }
-                // Priority 3: Try to construct from UID (backup)
-                else if (e.uid) {
-                    // Only try this as last resort since it gives wrong URLs
-                    const uidPatterns = [
-                        /evt-([a-zA-Z0-9]+)/,  // evt-XXXXX pattern
-                    ];
-                    
-                    for (const pattern of uidPatterns) {
-                        const match = e.uid.match(pattern);
-                        if (match) {
-                            const eventId = match[1];
-                            eventUrl = `https://lu.ma/evt-${eventId}`;
-                            break;
-                        }
-                    }
-                }
-                
-                // Fallback: if we have calendar ID, link to calendar
-                if (!eventUrl && e.calendarId) {
-                    eventUrl = `https://lu.ma/calendar/cal-${e.calendarId}`;
-                }
-                
-                return {
-                    'Event Name': e.summary || 'Untitled Event',
-                    'Host': host,
-                    'Date & Time': e.start.toISOString(),
-                    'Location': displayLocation || e.location,
-                    'Latitude': coords ? coords[1] : null,
-                    'Longitude': coords ? coords[0] : null,
-                    'Event URL': eventUrl
-                };
-            }));
-
-            allEvents = geocodedEvents.filter(e => e.Latitude && e.Longitude);
-            addMarkersAndListItems(allEvents);
+            // All locations have coordinates, so we can use them directly
+            allLocations = staticLocations;
+            addMarkersAndListItems(allLocations);
 
         } catch (error) {
-            console.error('Error fetching or parsing calendar data:', error);
-            const eventList = document.getElementById("event-list");
-            eventList.innerHTML = '<li style="text-align: center; padding: 20px;">Unable to load events. Please try again later.</li>';
+            console.error('Error loading static locations:', error);
+            const locationList = document.getElementById("location-list");
+            locationList.innerHTML = '<li style="text-align: center; padding: 20px;">Unable to load locations. Please try again later.</li>';
         }
     }
 
-    fetchAndProcessCalendars();
+    loadStaticLocations();
 
 
     // =====================================
@@ -629,7 +503,7 @@ function initializeApp() {
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', (e) => {
         const activeLocationFilter = document.querySelector('.location-filter-btn.active').dataset.location;
-        filterEventsByLocation(activeLocationFilter, e.target.value);
+        filterLocationsByArea(activeLocationFilter, e.target.value);
     });
 
     // Location filter functionality
@@ -644,7 +518,7 @@ function initializeApp() {
             // Get current search term and apply both filters
             const searchTerm = searchInput.value;
             const locationFilter = btn.dataset.location;
-            filterEventsByLocation(locationFilter, searchTerm);
+            filterLocationsByArea(locationFilter, searchTerm);
         });
     });
 
@@ -731,7 +605,7 @@ function initializeApp() {
         
         // Group events by date
         const eventsByDate = {};
-        allEvents.forEach(event => {
+        allLocations.forEach(location => {
             const eventDate = new Date(event['Date & Time']);
             const dateKey = eventDate.toDateString();
             if (!eventsByDate[dateKey]) {
