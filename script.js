@@ -17,12 +17,13 @@ function initializeApp() {
       const vh = window.innerHeight * 0.01;
       const actualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       
+      // Be more conservative - subtract extra space for mobile browser UI
+      const safeHeight = actualHeight - 60; // Subtract 60px for mobile browser navigation
+      
       document.documentElement.style.setProperty('--vh', `${vh}px`);
       document.documentElement.style.setProperty('--mobile-vh', `${window.innerHeight}px`);
-      document.documentElement.style.setProperty('--available-height', `${actualHeight}px`);
-      
-      // Force a more aggressive approach for mobile browsers
-      document.documentElement.style.setProperty('--real-vh', `${actualHeight}px`);
+      document.documentElement.style.setProperty('--available-height', `${safeHeight}px`);
+      document.documentElement.style.setProperty('--real-vh', `${safeHeight}px`);
     }
   }
 
@@ -47,6 +48,51 @@ function initializeApp() {
   let mapCenter = defaultCenter;
   let userLocationCoords = null;
   let map = null; // Global map variable
+  let currentOpenPopup = null; // Track currently open popup
+
+  // =====================================
+  // Bottom Navigation Setup
+  // =====================================
+  
+  function initializeBottomNav() {
+    const navButtons = document.querySelectorAll('.bottom-nav .nav-btn');
+    const locationsContainer = document.getElementById('list-container');
+    const locationsButton = document.querySelector('.bottom-nav .nav-btn[data-section="locations"]');
+    
+    // Locations container starts visible, so Locations button should be active
+    let locationsVisible = true;
+    
+    navButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const section = this.getAttribute('data-section');
+        
+        // Remove active class from all buttons
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        
+        if (section === 'locations') {
+          // Toggle locations visibility
+          locationsVisible = !locationsVisible;
+          
+          if (locationsVisible) {
+            locationsContainer.style.display = 'flex';
+            this.classList.add('active');
+          } else {
+            locationsContainer.style.display = 'none';
+            this.classList.remove('active');
+          }
+        } else {
+          // For Members and Cultures, just add active state (future functionality)
+          this.classList.add('active');
+          
+          // If locations was visible, hide it since we're switching sections
+          if (locationsVisible) {
+            locationsContainer.style.display = 'none';
+            locationsVisible = false;
+          }
+        }
+      });
+    });
+  }
 
   // =====================================
   // Geolocation Functions
@@ -79,7 +125,7 @@ function initializeApp() {
         },
         (error) => {
           loadingText.textContent = 'Location access denied';
-          loadingSubtext.textContent = 'Using default location (Bangalore). You can still browse events!';
+          loadingSubtext.textContent = 'Using default location (Bangalore). You can still browse locations!';
           
           // Show manual location button
           const manualBtn = document.getElementById('manual-location-btn');
@@ -148,7 +194,7 @@ function initializeApp() {
       // Hide loading screen and initialize map
       loadingOverlay.style.display = 'none';
       if (!map) {
-        initializeMap();
+      initializeMap();
       }
     });
 
@@ -160,6 +206,9 @@ function initializeApp() {
       pitch: 60,
       bearing: -30,
   });
+
+  // Remove default navigation controls (zoom buttons)
+  // Don't add any navigation controls
 
   map.on("style.load", () => {
     map.setConfigProperty("basemap", "lightPreset", "night");
@@ -201,8 +250,7 @@ function initializeApp() {
     });
   });
 
-    // Add map controls
-    map.addControl(new mapboxgl.NavigationControl(), 'bottom-left');
+    // Navigation controls removed to avoid interference with bottom nav bar
 
     // Add user location marker if available
     if (userLocationCoords) {
@@ -228,7 +276,74 @@ function initializeApp() {
     }
 
     // =====================================
-    // Event Loading and Display
+    // Static Locations Data
+    // =====================================
+    
+    const staticLocations = [
+        {
+            'Location Name': 'Zo San Francisco',
+            'Host': 'Zo Team',
+            'Date & Time': new Date().toISOString(),
+            'Location': 'San Francisco, CA',
+            'Latitude': 37.781903723962394,
+            'Longitude': -122.40089759537564,
+            'Location URL': 'https://lu.ma/calendar/cal-3YNnBTToy9fnnjQ',
+            'Area': 'sanfrancisco'
+        },
+        {
+            'Location Name': 'Zo Koramangala',
+            'Host': 'Zo Team',
+            'Date & Time': new Date().toISOString(),
+            'Location': 'Koramangala, Bangalore',
+            'Latitude': 12.933043207450986,
+            'Longitude': 77.63463845876512,
+            'Location URL': 'https://lu.ma/calendar/cal-ZVonmjVxLk7F2oM',
+            'Area': 'bangalore'
+        },
+        {
+            'Location Name': 'Zo Whitefield',
+            'Host': 'Zo Team',
+            'Date & Time': new Date().toISOString(),
+            'Location': 'Whitefield, Bangalore',
+            'Latitude': 12.972625067533576,
+            'Longitude': 77.74648576165846,
+            'Location URL': 'https://lu.ma/calendar/cal-ZVonmjVxLk7F2oM',
+            'Area': 'bangalore'
+        },
+        {
+            'Location Name': 'Lossfunk',
+            'Host': 'Community Partner',
+            'Date & Time': new Date().toISOString(),
+            'Location': 'Bangalore',
+            'Latitude': 12.981365725590802,
+            'Longitude': 77.64077028864327,
+            'Location URL': '#',
+            'Area': 'bangalore'
+        },
+        {
+            'Location Name': 'Shipyard',
+            'Host': 'Community Partner',
+            'Date & Time': new Date().toISOString(),
+            'Location': 'Bangalore',
+            'Latitude': 12.982406246118158,
+            'Longitude': 77.64026430077156,
+            'Location URL': '#',
+            'Area': 'bangalore'
+        },
+        {
+            'Location Name': 'The Hub',
+            'Host': 'Community Partner',
+            'Date & Time': new Date().toISOString(),
+            'Location': 'Bangalore',
+            'Latitude': 12.979966981737082,
+            'Longitude': 77.60760484972558,
+            'Location URL': '#',
+            'Area': 'bangalore'
+        }
+    ];
+
+    // =====================================
+    // Location Loading and Display
     // =====================================
     
     let allLocations = []; // Store all locations to enable filtering
@@ -250,30 +365,44 @@ function initializeApp() {
   }
 
   // Track open popups to manage auto-close behavior
-  let currentOpenPopup = null;
+  // currentOpenPopup is now declared at module level
 
-      function addMarkersAndListItems(data) {
+  function addMarkersAndListItems(data) {
     const locationList = document.getElementById("location-list");
     locationList.innerHTML = '';
+
+    // Clear existing markers
+    if (map && map.getLayer && map.getLayer('locations')) {
+        map.removeLayer('locations');
+        map.removeSource('locations');
+    }
 
     data.forEach(function (row) {
       if (row.Latitude && row.Longitude) {
         // Add map marker
-        const marker = new mapboxgl.Marker()
+        const marker = new mapboxgl.Marker({
+            color: row.Area === 'sanfrancisco' ? '#e67e5c' : '#d4a574',
+            scale: 1.2
+        })
           .setLngLat([parseFloat(row.Longitude), parseFloat(row.Latitude)])
           .addTo(map);
 
-        // Remove date formatting for static hackspaces
+        const formattedDate = new Date(row["Date & Time"]).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short', 
+          day: 'numeric',
+          year: 'numeric'
+        });
 
-        // Create popup content for hackspaces
-        const visitButton = row["Location URL"] ? 
+        // Create popup content
+        const visitButton = row["Location URL"] && row["Location URL"] !== '#' ? 
             `<a href="${row["Location URL"]}" target="_blank" class="popup-register-btn">Visit Now</a>` : 
             '';
             
         const popupContent = `
           <div class="glass-popup">
             <h3>${row["Location Name"] || "N/A"}</h3>
-            <p>🔧 ${row.Type || "Hackspace"}</p>
+            <p>🏢 ${row.Host || "N/A"}</p>
             <p>📍 ${row.Location || "N/A"}</p>
             ${visitButton}
           </div>
@@ -308,14 +437,14 @@ function initializeApp() {
         const listItem = document.createElement("li");
         listItem.className = "location-item";
         
-        const listVisitButton = row["Location URL"] ? 
+        const listVisitButton = row["Location URL"] && row["Location URL"] !== '#' ? 
             `<a href="${row["Location URL"]}" target="_blank" class="register-btn" onclick="event.stopPropagation()">Visit</a>` : 
             '';
         
         listItem.innerHTML = `
           <div class="location-details">
               <h3>${row["Location Name"] || "N/A"}</h3>
-              <p class="location-type">🔧 ${row.Type || "Hackspace"}</p>
+              <p class="location-host">🏢 ${row.Host || "N/A"}</p>
               <p class="location-address">📍 ${row.Location || "N/A"}</p>
           </div>
           ${listVisitButton}
@@ -357,7 +486,10 @@ function initializeApp() {
         const filtered = allLocations.filter(location => {
             const locationName = (location['Location Name'] || '').toLowerCase();
             const locationAddress = (location['Location'] || '').toLowerCase();
-            return locationName.includes(lowerCaseSearchTerm) || locationAddress.includes(lowerCaseSearchTerm);
+            const locationHost = (location['Host'] || '').toLowerCase();
+            return locationName.includes(lowerCaseSearchTerm) || 
+                   locationAddress.includes(lowerCaseSearchTerm) ||
+                   locationHost.includes(lowerCaseSearchTerm);
         });
         addMarkersAndListItems(filtered);
     }
@@ -365,46 +497,23 @@ function initializeApp() {
     function filterLocationsByArea(areaFilter, searchTerm = '') {
         let filtered = allLocations;
         
-        // Apply location filter
-        if (locationFilter !== 'all') {
-            if (locationFilter === 'bangalore') {
-                filtered = filtered.filter(event => {
-                    const location = (event['Location'] || '').toLowerCase();
-                    return location.includes('bangalore') || 
-                           location.includes('koramangala') || 
-                           location.includes('anaa infra') ||
-                           location.includes('nirguna mandir');
-                });
-            } else if (locationFilter === 'sanfrancisco') {
-                filtered = filtered.filter(event => {
-                    const location = (event['Location'] || '').toLowerCase();
-                    const isStanFrancisco = location.includes('san francisco') || 
-                                          location.includes('sf') || 
-                                          location.includes('zo house') || 
-                                          location.includes('300 4th st') ||
-                                          location.includes('4th street') ||
-                                          location.includes('california') ||
-                                          location.includes('ca 94107') ||
-                                          location.includes('usa');
-                    
-                    // Exclude Bangalore locations that might contain similar keywords
-                    const isBangalore = location.includes('bangalore') || 
-                                       location.includes('koramangala') || 
-                                       location.includes('anaa infra') ||
-                                       location.includes('nirguna mandir');
-                    
-                    return isStanFrancisco && !isBangalore;
-                });
-            }
+        // Apply area filter
+        if (areaFilter !== 'all') {
+            filtered = filtered.filter(location => {
+                return location.Area === areaFilter;
+            });
         }
         
         // Apply search filter if search term exists
         if (searchTerm) {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            filtered = filtered.filter(event => {
-                const eventName = (event['Event Name'] || '').toLowerCase();
-                const location = (event['Location'] || '').toLowerCase();
-                return eventName.includes(lowerCaseSearchTerm) || location.includes(lowerCaseSearchTerm);
+            filtered = filtered.filter(location => {
+                const locationName = (location['Location Name'] || '').toLowerCase();
+                const locationAddress = (location['Location'] || '').toLowerCase();
+                const locationHost = (location['Host'] || '').toLowerCase();
+                return locationName.includes(lowerCaseSearchTerm) || 
+                       locationAddress.includes(lowerCaseSearchTerm) ||
+                       locationHost.includes(lowerCaseSearchTerm);
             });
         }
         
@@ -412,88 +521,22 @@ function initializeApp() {
     }
 
     // =====================================
-    // Static Location Data
+    // Static Location Loading
     // =====================================
-
-    // Removed calendar parsing functions - no longer needed for static locations
-
+    
     function loadStaticLocations() {
         try {
-            // Static hackspace data for Zo initiative
-            const staticLocations = [
-                {
-                    'Location Name': 'Zo SF',
-                    'Host': 'Zo Team',
-                    'Date & Time': new Date().toISOString(),
-                    'Location': 'San Francisco, CA',
-                    'Latitude': 37.781903723962394,
-                    'Longitude': -122.40089759537564,
-                    'Location URL': null,
-                    'Type': 'Hackspace'
-                },
-                {
-                    'Location Name': 'Zo Kora',
-                    'Host': 'Zo Team',
-                    'Date & Time': new Date().toISOString(),
-                    'Location': 'Koramangala, Bangalore',
-                    'Latitude': 12.933043207450986,
-                    'Longitude': 77.63463845876512,
-                    'Location URL': null,
-                    'Type': 'Hackspace'
-                },
-                {
-                    'Location Name': 'Zo WF',
-                    'Host': 'Zo Team',
-                    'Date & Time': new Date().toISOString(),
-                    'Location': 'Whitefield, Bangalore',
-                    'Latitude': 12.972625067533576,
-                    'Longitude': 77.74648576165846,
-                    'Location URL': null,
-                    'Type': 'Hackspace'
-                },
-                {
-                    'Location Name': 'Lossfunk',
-                    'Host': 'Zo Team',
-                    'Date & Time': new Date().toISOString(),
-                    'Location': 'Bangalore, Karnataka',
-                    'Latitude': 12.981365725590802,
-                    'Longitude': 77.64077028864327,
-                    'Location URL': null,
-                    'Type': 'Hackspace'
-                },
-                {
-                    'Location Name': 'Shipyard',
-                    'Host': 'Zo Team',
-                    'Date & Time': new Date().toISOString(),
-                    'Location': 'Bangalore, Karnataka',
-                    'Latitude': 12.982406246118158,
-                    'Longitude': 77.64026430077156,
-                    'Location URL': null,
-                    'Type': 'Hackspace'
-                },
-                {
-                    'Location Name': 'The Hub',
-                    'Host': 'Zo Team',
-                    'Date & Time': new Date().toISOString(),
-                    'Location': 'Bangalore, Karnataka',
-                    'Latitude': 12.979966981737082,
-                    'Longitude': 77.60760484972558,
-                    'Location URL': null,
-                    'Type': 'Hackspace'
-                }
-            ];
-
-            // All locations have coordinates, so we can use them directly
             allLocations = staticLocations;
             addMarkersAndListItems(allLocations);
-
+            console.log('✅ Static locations loaded successfully!');
         } catch (error) {
-            console.error('Error loading static hackspaces:', error);
+            console.error('Error loading static locations:', error);
             const locationList = document.getElementById("location-list");
-            locationList.innerHTML = '<li style="text-align: center; padding: 20px;">Unable to load hackspaces. Please try again later.</li>';
+            locationList.innerHTML = '<li style="text-align: center; padding: 20px;">Unable to load locations. Please try again later.</li>';
         }
     }
 
+    // Load static locations instead of fetching from calendar
     loadStaticLocations();
 
 
@@ -525,7 +568,17 @@ function initializeApp() {
 
     const viewAllBtn = document.querySelector('.view-all-btn');
     viewAllBtn.addEventListener('click', () => {
-        openCalendarView();
+        // Show all locations and zoom out to see all areas
+        filterLocationsByArea('all', '');
+        
+        // Calculate bounds to fit all locations
+        if (allLocations.length > 0) {
+            const bounds = new mapboxgl.LngLatBounds();
+            allLocations.forEach(location => {
+                bounds.extend([location.Longitude, location.Latitude]);
+            });
+            map.fitBounds(bounds, { padding: 50 });
+        }
     });
 
 
@@ -544,132 +597,41 @@ function initializeApp() {
     setView();
     window.addEventListener("resize", setView);
 
-    // =====================================
-    // Calendar View Functions
-    // =====================================
+      // Initialize bottom navigation
+  initializeBottomNav();
+
+  // =====================================
+  // Supabase Initialization
+  // =====================================
+  
+  // Initialize Supabase connection
+  if (typeof window.SupabaseClient !== 'undefined') {
+    const supabaseClient = window.SupabaseClient.initialize();
     
-    let currentCalendarDate = new Date();
-    
-    function openCalendarView() {
-        const calendarOverlay = document.getElementById('calendar-overlay');
-        calendarOverlay.style.display = 'flex';
-        renderCalendar();
-        setupCalendarEventListeners();
-    }
-    
-    function closeCalendarView() {
-        const calendarOverlay = document.getElementById('calendar-overlay');
-        calendarOverlay.style.display = 'none';
-    }
-    
-    function setupCalendarEventListeners() {
-        const closeBtn = document.querySelector('.close-calendar-btn');
-        const prevBtn = document.querySelector('.prev-month');
-        const nextBtn = document.querySelector('.next-month');
-        const overlay = document.getElementById('calendar-overlay');
-        
-        closeBtn.onclick = closeCalendarView;
-        
-        overlay.onclick = (e) => {
-            if (e.target === overlay) {
-                closeCalendarView();
-            }
-        };
-        
-        prevBtn.onclick = () => {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-            renderCalendar();
-        };
-        
-        nextBtn.onclick = () => {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-            renderCalendar();
-        };
-    }
-    
-    function renderCalendar() {
-        const monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-        
-        const currentMonth = document.querySelector('.current-month');
-        currentMonth.textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
-        
-        const calendarDays = document.getElementById('calendar-days');
-        calendarDays.innerHTML = '';
-        
-        const firstDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 1);
-        const lastDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 0);
-        const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - firstDay.getDay());
-        
-        // Group events by date
-        const eventsByDate = {};
-        allLocations.forEach(location => {
-            const eventDate = new Date(event['Date & Time']);
-            const dateKey = eventDate.toDateString();
-            if (!eventsByDate[dateKey]) {
-                eventsByDate[dateKey] = [];
-            }
-            eventsByDate[dateKey].push(event);
-        });
-        
-        // Generate calendar days
-        for (let i = 0; i < 42; i++) { // 6 weeks * 7 days
-            const date = new Date(startDate);
-            date.setDate(startDate.getDate() + i);
-            
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day';
-            
-            const isCurrentMonth = date.getMonth() === currentCalendarDate.getMonth();
-            const dateKey = date.toDateString();
-            const dayEvents = eventsByDate[dateKey] || [];
-            
-            if (!isCurrentMonth) {
-                dayElement.classList.add('other-month');
-            }
-            
-            if (dayEvents.length > 0) {
-                dayElement.classList.add('has-events');
-            }
-            
-            const eventItems = dayEvents.slice(0, 3).map(event => {
-                const eventName = event['Event Name'];
-                const truncatedName = eventName.length > 20 ? eventName.substring(0, 17) + '...' : eventName;
-                const eventUrl = event['Event URL'];
-                
-                if (eventUrl) {
-                    return `<a href="${eventUrl}" target="_blank" class="calendar-event-preview clickable">${truncatedName}</a>`;
-                } else {
-                    return `<div class="calendar-event-preview">${truncatedName}</div>`;
-                }
-            }).join('');
-            
-            const moreEventsIndicator = dayEvents.length > 3 ? 
-                `<div class="more-events">+${dayEvents.length - 3} more</div>` : '';
-            
-            dayElement.innerHTML = `
-                <div class="day-number">${date.getDate()}</div>
-                <div class="day-events-container">
-                    ${eventItems}
-                    ${moreEventsIndicator}
-                </div>
-            `;
-            
-            // Remove click handler since events are now directly clickable
-            // dayElement.onclick = () => { ... } - REMOVED
-            
-            calendarDays.appendChild(dayElement);
+    if (supabaseClient) {
+      // Test the connection
+      window.SupabaseClient.ping().then(success => {
+        if (success) {
+          console.log('🚀 Supabase integration ready!');
         }
+      });
     }
+  } else {
+    console.warn('Supabase client not available. Make sure supabaseClient.js is loaded.');
+  }
+
+    // =====================================
+    // Location Overview Functions
+    // =====================================
+    
+    // Calendar view removed since we're showing static locations, not time-based events
+    // The "View All" button now shows all locations on the map instead
   }
 }
 
 // Check if DOM is already loaded, otherwise wait for it
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
+    } else {
   initializeApp();
-}
+        }

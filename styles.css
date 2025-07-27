@@ -50,6 +50,12 @@ html {
   height: 100%;
 }
 
+/* Hide any mapbox controls that might interfere with bottom nav */
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right {
+  display: none !important;
+}
+
 /* =====================================
    Header Styles
    ===================================== */
@@ -140,11 +146,15 @@ html {
     position: absolute;
     top: 40px;
     right: 20px;
+    bottom: 0px; /* Extend to bottom - flush with nav */
     width: 350px;
+    max-height: calc(100vh - 100px); /* Account for top position */
     z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    overflow-y: hidden; /* Let the inner location list handle scrolling */
+    padding-bottom: 0px; /* No padding on container */
 }
 
 .list-header {
@@ -215,24 +225,25 @@ html {
     cursor: pointer;
 }
 
-#event-list {
+#location-list {
   list-style: none;
-  padding: 0;
+  padding: 0 0 70px 0; /* Add bottom padding for nav bar */
   margin: 0;
-  max-height: calc(100vh - 150px);
+  max-height: calc(100vh - 200px); /* Account for header and bottom nav */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+  flex: 1; /* Take remaining space */
 }
 
-#event-list::-webkit-scrollbar {
+#location-list::-webkit-scrollbar {
   display: none; /* Chrome, Safari, and Opera */
 }
 
-.event-item {
+.location-item {
   background-color: var(--secondary-color);
   border: 1px solid var(--secondary-color);
   border-radius: 12px;
@@ -244,35 +255,35 @@ html {
   align-items: center;
 }
 
-.event-item:hover {
+.location-item:hover {
   background-color: var(--primary-color);
   border-color: var(--purple-accent);
 }
 
-.event-icon {
+.location-icon {
   font-size: 2rem;
   flex-shrink: 0;
 }
 
-.event-details {
+.location-details {
   flex-grow: 1;
 }
 
-.event-item h3 {
+.location-item h3 {
   color: var(--text-color);
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
 }
 
-.event-item p {
+.location-item p {
   margin: 4px 0;
   font-size: 0.85rem;
   color: var(--text-color);
   opacity: 0.8;
 }
 
-.event-item .price {
+.location-item .price {
   font-weight: 600;
   color: var(--purple-accent);
   margin-top: 8px;
@@ -480,6 +491,7 @@ html {
     --mobile-vh: 100vh;
     --available-height: 100vh;
     --real-vh: 100vh;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* Ensure full app fits in available viewport, accounting for browser UI */
@@ -489,6 +501,7 @@ html {
     height: 100dvh; /* Dynamic viewport height - excludes browser UI */
     height: -webkit-fill-available; /* Fallback for older WebKit browsers */
     overflow: hidden;
+    position: relative;
   }
 
   /* Additional mobile browser fixes */
@@ -500,7 +513,7 @@ html {
     
     #map-container {
       height: -webkit-fill-available;
-      height: calc(-webkit-fill-available * 0.75);
+      height: calc(-webkit-fill-available * 0.70); /* Reduced to 70% to give more space to locations */
     }
   }
 
@@ -512,14 +525,7 @@ html {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Adjust map container to take 3/4 of available screen */
-  #map-container {
-    height: 75vh;
-    height: calc(var(--real-vh, 100vh) * 0.75); /* Use real viewport height */
-    height: calc(var(--available-height, 100vh) * 0.75); /* Use custom property */
-    height: 75dvh; /* Use dynamic viewport height to avoid browser nav overlap */
-    position: relative;
-  }
+  /* Map container height will be set specifically in the mobile section below */
 
   #map {
     height: 100%;
@@ -551,39 +557,61 @@ html {
     line-height: 1.2;
     text-align: center;
   }
-
+  
   .logo-gif {
     height: 50px;
     width: auto;
   }
   
-  /* Events list takes 1/4 of screen at bottom */
+  /* Locations list positioned flush with bottom nav bar */
   #list-container {
     position: fixed !important;
-    top: 75vh !important; /* Start where map ends */
-    top: calc(var(--real-vh, 100vh) * 0.75) !important; /* Use real viewport height */
-    top: calc(var(--available-height, 100vh) * 0.75) !important; /* Use custom property */
-    top: 75dvh !important; /* Use dynamic viewport height */
+    top: auto !important; /* Don't rely on top positioning */
     left: 0 !important;
     right: 0 !important;
-    bottom: 0 !important;
+    bottom: 0px !important; /* Extend to bottom - flush with nav */
     width: 100% !important;
-    height: 25vh !important; /* 1/4 of viewport height */
-    height: calc(var(--real-vh, 100vh) * 0.25) !important; /* Use real viewport height */
-    height: calc(var(--available-height, 100vh) * 0.25) !important; /* Use custom property */
-    height: 25dvh !important; /* Use dynamic viewport height */
+    height: 210px !important; /* Full height to bottom */
     transform: none !important;
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 0;
-    padding-bottom: env(safe-area-inset-bottom, 0); /* Account for home indicator on iOS */
+    padding: 0; /* No padding on container */
     border-radius: 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     display: flex !important;
     z-index: 100;
     flex-direction: column;
     overflow: hidden;
+  }
+
+  /* Adjust map to accommodate fixed locations container and bottom nav with proper spacing */
+  #map-container {
+    height: calc(100vh - 210px) !important; /* Account for larger locations list */
+    height: calc(100dvh - 210px) !important;
+    height: calc(var(--available-height, 100vh) - 210px) !important;
+    position: relative;
+  }
+
+  /* Bottom nav mobile adjustments */
+  .bottom-nav {
+    padding: 8px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+    min-height: 60px; /* Ensure consistent height */
+  }
+
+  .bottom-nav .nav-btn {
+    min-width: 60px;
+    padding: 6px 12px;
+    margin: 0 4px;
+  }
+
+  .bottom-nav .nav-icon {
+    font-size: 1.2rem;
+    margin-bottom: 1px;
+  }
+
+  .bottom-nav .nav-label {
+    font-size: 0.65rem;
   }
 
   /* Compact header */
@@ -695,15 +723,15 @@ html {
     transform: translateY(-1px);
   }
 
-  /* Horizontal scrolling event list */
-  #event-list {
+  /* Horizontal scrolling location list */
+  #location-list {
     display: flex !important;
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     margin: 0;
-    padding: 8px 15px; /* Reduced padding for better space usage */
+    padding: 8px 15px 80px 15px; /* Add bottom padding to account for nav bar */
     list-style: none;
     gap: 10px;
     scrollbar-width: none; /* Firefox */
@@ -712,12 +740,12 @@ html {
     align-items: flex-start;
   }
 
-  #event-list::-webkit-scrollbar {
+  #location-list::-webkit-scrollbar {
     display: none;
   }
 
-  /* Simplified horizontal event cards */
-  .event-item {
+  /* Simplified horizontal location cards */
+  .location-item {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -739,18 +767,18 @@ html {
     position: relative;
   }
 
-  .event-item:hover {
+  .location-item:hover {
     background: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
   }
 
   /* Remove thumbnail and price badge on mobile */
-  .event-item::before,
-  .event-item::after {
+  .location-item::before,
+  .location-item::after {
     display: none !important;
   }
 
-  .event-details {
+  .location-details {
     display: flex !important;
     flex-direction: column;
     align-items: center;
@@ -760,7 +788,7 @@ html {
     width: 100%;
   }
 
-  .event-details h3 {
+  .location-details h3 {
     font-size: 0.8rem;
     margin-bottom: 0;
     color: white;
@@ -776,11 +804,11 @@ html {
     padding: 0 4px;
   }
 
-  .event-details p {
+  .location-details p {
     display: none; /* Hiding time and location in the card */
   }
-  .event-details p.event-date,
-  .event-details p.event-location {
+  .location-details p.location-date,
+  .location-details p.location-address {
     display: none; /* Hide date and location on mobile cards */
   }
 
@@ -973,7 +1001,7 @@ html {
   color: rgba(42, 37, 29, 0.4);
 }
 
-.calendar-day.has-events {
+.calendar-day.has-locations {
   border: 2px solid rgba(212, 165, 116, 0.6);
   background: rgba(212, 165, 116, 0.1);
 }
@@ -984,14 +1012,14 @@ html {
   font-size: 1rem;
 }
 
-.day-events-container {
+.day-locations-container {
   display: flex;
   flex-direction: column;
   gap: 2px;
   flex: 1;
 }
 
-.calendar-event-preview {
+.calendar-location-preview {
   font-size: 0.7rem;
   background: rgba(212, 165, 116, 0.8);
   color: white;
@@ -1008,14 +1036,14 @@ html {
   transition: all 0.3s ease;
 }
 
-.calendar-event-preview.clickable:hover {
+.calendar-location-preview.clickable:hover {
   background: rgba(212, 165, 116, 1);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(212, 165, 116, 0.4);
   cursor: pointer;
 }
 
-.more-events {
+.more-locations {
   font-size: 0.65rem;
   color: var(--coral-accent);
   font-weight: 600;
@@ -1108,14 +1136,14 @@ html {
     margin-bottom: 3px;
   }
   
-  .calendar-event-preview {
+  .calendar-location-preview {
     font-size: 0.55rem;
     padding: 1px 3px;
     border-radius: 3px;
     line-height: 1.1;
   }
   
-  .more-events {
+  .more-locations {
     font-size: 0.55rem;
     margin-top: 1px;
   }
@@ -1195,26 +1223,99 @@ html {
     margin-bottom: 2px;
   }
   
-  .calendar-event-preview {
+  .calendar-location-preview {
     font-size: 0.5rem;
     padding: 1px 2px;
     margin-bottom: 0.5px;
   }
   
-  .more-events {
+  .more-locations {
     font-size: 0.5rem;
   }
   
-  .calendar-event-item {
+  .calendar-location-item {
     padding: 12px;
     margin-bottom: 8px;
   }
   
-  .calendar-event-item h4 {
+  .calendar-location-item h4 {
     font-size: 0.95rem;
   }
   
-  .calendar-event-item p {
+  .calendar-location-item p {
     font-size: 0.85rem;
   }
+}
+
+/* =====================================
+   Bottom Navigation Styles
+   ===================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 20px calc(8px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.bottom-nav .nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  min-width: 70px;
+  margin: 0 8px;
+  position: relative;
+}
+
+.bottom-nav .nav-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.bottom-nav .nav-btn.active {
+  color: var(--accent-color);
+  background: rgba(212, 165, 116, 0.15);
+}
+
+.bottom-nav .nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background: var(--accent-color);
+  border-radius: 2px;
+}
+
+.bottom-nav .nav-icon {
+  font-size: 1.4rem;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.bottom-nav .nav-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  font-family: "Space Grotesk", sans-serif;
+  letter-spacing: 0.5px;
 }

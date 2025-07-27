@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#f4f1ea" />
-    <title>Zo Hackspaces</title>
+    <title>Zo Locations Hub</title>
     
     <!-- External Stylesheets -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet" />
@@ -25,38 +25,38 @@
 
     <div id="center-panel">
       <div id="location-info">
-        <img src="Z_to_House.gif" alt="Zo Hackspaces" class="logo-gif">
+        <img src="Z_to_House.gif" alt="Zo Locations Hub" class="logo-gif">
       </div>
     </div>
 
     <div id="list-container">
         <div class="list-header">
             <div class="location-filters">
-                <button class="location-filter-btn active" data-location="all">All Hackspaces</button>
+                <button class="location-filter-btn active" data-location="all">All Areas</button>
                 <button class="location-filter-btn" data-location="bangalore">Bangalore</button>
                 <button class="location-filter-btn" data-location="sanfrancisco">San Francisco</button>
             </div>
             <div class="search-and-view">
-                <div class="search-bar">
-                    <input type="text" placeholder="Search hackspaces" id="search-input">
+            <div class="search-bar">
+                <input type="text" placeholder="Search locations" id="search-input">
                 </div>
                 <button class="view-all-btn">View All</button>
             </div>
             <div class="mobile-filters">
                 <button class="filter-btn active" data-filter="dates">All Areas ▼</button>
-                <button class="filter-btn" data-filter="hackspaces">All Hackspaces ▼</button>
+                <button class="filter-btn" data-filter="locations">All Locations ▼</button>
             </div>
         </div>
         <ul id="location-list"></ul>
     </div>
 
-    <!-- Calendar overlay removed as it's not applicable for static hackspaces -->
+    <!-- Calendar overlay removed since we're showing static locations, not time-based events -->
 
     <!-- Loading Overlay -->
     <div id="location-loading" class="loading-overlay">
       <div class="loading-content">
         <img src="spinner_Z_4.gif" alt="Loading" class="loading-spinner">
-        <p>Discovering Zo Hackspaces</p>
+        <p>Discovering Zo Locations</p>
         <small>Please allow location access for the best experience</small>
         <button id="manual-location-btn" class="manual-location-button" style="display: none;">
           📍 Try Location Again
@@ -66,21 +66,31 @@
 
     <!-- External Scripts -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Configuration and Supabase Client (load before main script) -->
+    <script src="config.js"></script>
+    <script src="supabaseClient.js"></script>
+    
+    <!-- Main Application Script -->
     <script src="script.js"></script>
 
     <!-- Bottom Navigation Bar -->
     <nav id="bottom-nav" class="bottom-nav">
       <button class="nav-btn" data-section="members">
         <span class="nav-icon">👥</span>
-        <span class="nav-label">Members</span>
+        <span class="nav-label">Curators</span>
       </button>
       <button class="nav-btn active" data-section="locations">
-        <span class="nav-icon">🔧</span>
-        <span class="nav-label">Hackspaces</span>
+        <span class="nav-icon">📍</span>
+        <span class="nav-label">Locations</span>
       </button>
       <button class="nav-btn" data-section="cultures">
         <span class="nav-icon">🌍</span>
-        <span class="nav-label">Cultures</span>
+        <span class="nav-label">Events</span>
       </button>
     </nav>
   </body>
