@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#f4f1ea" />
-    <title>Zo House Events Calendar</title>
+    <title>Zo Hackspaces</title>
     
     <!-- External Stylesheets -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet" />
@@ -25,63 +25,38 @@
 
     <div id="center-panel">
       <div id="location-info">
-        <img src="Z_to_House.gif" alt="Zo House Events Calendar" class="logo-gif">
+        <img src="Z_to_House.gif" alt="Zo Hackspaces" class="logo-gif">
       </div>
     </div>
 
     <div id="list-container">
         <div class="list-header">
             <div class="location-filters">
-                <button class="location-filter-btn active" data-location="all">All Locations</button>
+                <button class="location-filter-btn active" data-location="all">All Hackspaces</button>
                 <button class="location-filter-btn" data-location="bangalore">Bangalore</button>
                 <button class="location-filter-btn" data-location="sanfrancisco">San Francisco</button>
             </div>
             <div class="search-and-view">
                 <div class="search-bar">
-                    <input type="text" placeholder="Search" id="search-input">
+                    <input type="text" placeholder="Search hackspaces" id="search-input">
                 </div>
                 <button class="view-all-btn">View All</button>
             </div>
             <div class="mobile-filters">
-                <button class="filter-btn active" data-filter="dates">All Dates ▼</button>
-                <button class="filter-btn" data-filter="events">All Events ▼</button>
+                <button class="filter-btn active" data-filter="dates">All Areas ▼</button>
+                <button class="filter-btn" data-filter="hackspaces">All Hackspaces ▼</button>
             </div>
         </div>
-        <ul id="event-list"></ul>
+        <ul id="location-list"></ul>
     </div>
 
-    <!-- Calendar Overlay -->
-    <div id="calendar-overlay" class="calendar-overlay" style="display: none;">
-      <div class="calendar-content">
-        <div class="calendar-header">
-          <h2>All Events Calendar</h2>
-          <button class="close-calendar-btn">×</button>
-        </div>
-        <div class="calendar-nav">
-          <button class="nav-btn prev-month">‹</button>
-          <span class="current-month"></span>
-          <button class="nav-btn next-month">›</button>
-        </div>
-        <div class="calendar-grid">
-          <div class="calendar-days-header">
-            <div class="day-header">Sun</div>
-            <div class="day-header">Mon</div>
-            <div class="day-header">Tue</div>
-            <div class="day-header">Wed</div>
-            <div class="day-header">Thu</div>
-            <div class="day-header">Fri</div>
-            <div class="day-header">Sat</div>
-          </div>
-          <div class="calendar-days" id="calendar-days"></div>
-        </div>
-      </div>
-    </div>
+    <!-- Calendar overlay removed as it's not applicable for static hackspaces -->
 
     <!-- Loading Overlay -->
     <div id="location-loading" class="loading-overlay">
       <div class="loading-content">
         <img src="spinner_Z_4.gif" alt="Loading" class="loading-spinner">
-        <p>Tuning into Zo World</p>
+        <p>Discovering Zo Hackspaces</p>
         <small>Please allow location access for the best experience</small>
         <button id="manual-location-btn" class="manual-location-button" style="display: none;">
           📍 Try Location Again
@@ -92,5 +67,21 @@
     <!-- External Scripts -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
     <script src="script.js"></script>
+
+    <!-- Bottom Navigation Bar -->
+    <nav id="bottom-nav" class="bottom-nav">
+      <button class="nav-btn" data-section="members">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Members</span>
+      </button>
+      <button class="nav-btn active" data-section="locations">
+        <span class="nav-icon">🔧</span>
+        <span class="nav-label">Hackspaces</span>
+      </button>
+      <button class="nav-btn" data-section="cultures">
+        <span class="nav-icon">🌍</span>
+        <span class="nav-label">Cultures</span>
+      </button>
+    </nav>
   </body>
 </html>

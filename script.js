@@ -252,9 +252,9 @@ function initializeApp() {
   // Track open popups to manage auto-close behavior
   let currentOpenPopup = null;
 
-  function addMarkersAndListItems(data) {
-    const eventList = document.getElementById("event-list");
-    eventList.innerHTML = '';
+      function addMarkersAndListItems(data) {
+    const locationList = document.getElementById("location-list");
+    locationList.innerHTML = '';
 
     data.forEach(function (row) {
       if (row.Latitude && row.Longitude) {
@@ -263,24 +263,19 @@ function initializeApp() {
           .setLngLat([parseFloat(row.Longitude), parseFloat(row.Latitude)])
           .addTo(map);
 
-        const formattedDate = new Date(row["Date & Time"]).toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short', 
-          day: 'numeric',
-          year: 'numeric'
-        });
+        // Remove date formatting for static hackspaces
 
-        // Create popup content
-        const registerButton = row["Event URL"] ? 
-            `<a href="${row["Event URL"]}" target="_blank" class="popup-register-btn">Register Now</a>` : 
+        // Create popup content for hackspaces
+        const visitButton = row["Location URL"] ? 
+            `<a href="${row["Location URL"]}" target="_blank" class="popup-register-btn">Visit Now</a>` : 
             '';
             
         const popupContent = `
           <div class="glass-popup">
-            <h3>${row["Event Name"] || "N/A"}</h3>
-            <p>📅 ${formattedDate}</p>
+            <h3>${row["Location Name"] || "N/A"}</h3>
+            <p>🔧 ${row.Type || "Hackspace"}</p>
             <p>📍 ${row.Location || "N/A"}</p>
-            ${registerButton}
+            ${visitButton}
           </div>
         `;
 
@@ -311,22 +306,22 @@ function initializeApp() {
 
         // Create list item
         const listItem = document.createElement("li");
-        listItem.className = "event-item";
+        listItem.className = "location-item";
         
-        const listRegisterButton = row["Event URL"] ? 
-            `<a href="${row["Event URL"]}" target="_blank" class="register-btn" onclick="event.stopPropagation()">Register</a>` : 
+        const listVisitButton = row["Location URL"] ? 
+            `<a href="${row["Location URL"]}" target="_blank" class="register-btn" onclick="event.stopPropagation()">Visit</a>` : 
             '';
         
         listItem.innerHTML = `
-          <div class="event-details">
-              <h3>${row["Event Name"] || "N/A"}</h3>
-              <p class="event-date">📅 ${formattedDate}</p>
-              <p class="event-location">📍 ${row.Location || "N/A"}</p>
+          <div class="location-details">
+              <h3>${row["Location Name"] || "N/A"}</h3>
+              <p class="location-type">🔧 ${row.Type || "Hackspace"}</p>
+              <p class="location-address">📍 ${row.Location || "N/A"}</p>
           </div>
-          ${listRegisterButton}
+          ${listVisitButton}
         `;
         
-        eventList.appendChild(listItem);
+        locationList.appendChild(listItem);
 
         // Add click handler for list item
         listItem.addEventListener("click", function (e) {
@@ -424,7 +419,7 @@ function initializeApp() {
 
     function loadStaticLocations() {
         try {
-            // Static location data for Zo initiative
+            // Static hackspace data for Zo initiative
             const staticLocations = [
                 {
                     'Location Name': 'Zo SF',
@@ -433,7 +428,8 @@ function initializeApp() {
                     'Location': 'San Francisco, CA',
                     'Latitude': 37.781903723962394,
                     'Longitude': -122.40089759537564,
-                    'Location URL': null
+                    'Location URL': null,
+                    'Type': 'Hackspace'
                 },
                 {
                     'Location Name': 'Zo Kora',
@@ -442,7 +438,8 @@ function initializeApp() {
                     'Location': 'Koramangala, Bangalore',
                     'Latitude': 12.933043207450986,
                     'Longitude': 77.63463845876512,
-                    'Location URL': null
+                    'Location URL': null,
+                    'Type': 'Hackspace'
                 },
                 {
                     'Location Name': 'Zo WF',
@@ -451,7 +448,8 @@ function initializeApp() {
                     'Location': 'Whitefield, Bangalore',
                     'Latitude': 12.972625067533576,
                     'Longitude': 77.74648576165846,
-                    'Location URL': null
+                    'Location URL': null,
+                    'Type': 'Hackspace'
                 },
                 {
                     'Location Name': 'Lossfunk',
@@ -460,7 +458,8 @@ function initializeApp() {
                     'Location': 'Bangalore, Karnataka',
                     'Latitude': 12.981365725590802,
                     'Longitude': 77.64077028864327,
-                    'Location URL': null
+                    'Location URL': null,
+                    'Type': 'Hackspace'
                 },
                 {
                     'Location Name': 'Shipyard',
@@ -469,7 +468,8 @@ function initializeApp() {
                     'Location': 'Bangalore, Karnataka',
                     'Latitude': 12.982406246118158,
                     'Longitude': 77.64026430077156,
-                    'Location URL': null
+                    'Location URL': null,
+                    'Type': 'Hackspace'
                 },
                 {
                     'Location Name': 'The Hub',
@@ -478,7 +478,8 @@ function initializeApp() {
                     'Location': 'Bangalore, Karnataka',
                     'Latitude': 12.979966981737082,
                     'Longitude': 77.60760484972558,
-                    'Location URL': null
+                    'Location URL': null,
+                    'Type': 'Hackspace'
                 }
             ];
 
@@ -487,9 +488,9 @@ function initializeApp() {
             addMarkersAndListItems(allLocations);
 
         } catch (error) {
-            console.error('Error loading static locations:', error);
+            console.error('Error loading static hackspaces:', error);
             const locationList = document.getElementById("location-list");
-            locationList.innerHTML = '<li style="text-align: center; padding: 20px;">Unable to load locations. Please try again later.</li>';
+            locationList.innerHTML = '<li style="text-align: center; padding: 20px;">Unable to load hackspaces. Please try again later.</li>';
         }
     }
 
