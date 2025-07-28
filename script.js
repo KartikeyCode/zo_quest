@@ -81,8 +81,11 @@ function initializeApp() {
             this.classList.remove('active');
           }
         } else {
-          // For Members and Cultures, just add active state (future functionality)
+          // All sections accessible - no gating
           this.classList.add('active');
+          
+          // Show placeholder for other sections
+          alert(`${section.charAt(0).toUpperCase() + section.slice(1)} section - Coming soon!`);
           
           // If locations was visible, hide it since we're switching sections
           if (locationsVisible) {
@@ -199,58 +202,49 @@ function initializeApp() {
     });
 
   function initializeMap() {
-  map = new mapboxgl.Map({
-    container: "map",
+    map = new mapboxgl.Map({
+      container: "map",
       center: mapCenter,
-    zoom: initialZoom,
+      zoom: initialZoom,
       pitch: 60,
       bearing: -30,
-  });
-
-  // Remove default navigation controls (zoom buttons)
-  // Don't add any navigation controls
-
-  map.on("style.load", () => {
-    map.setConfigProperty("basemap", "lightPreset", "night");
-    map.setConfigProperty("basemap", "showPointOfInterestLabels", false);
-    map.setConfigProperty("basemap", "showPlaceLabels", false);
-    map.setConfigProperty("basemap", "showRoadLabels", false);
-    map.setConfigProperty("basemap", "showTransitLabels", false);
-
-    // Add 3D building layer
-    map.addLayer({
-      id: "3d-buildings",
-      source: "composite",
-      "source-layer": "building",
-      filter: ["==", "extrude", "true"],
-      type: "fill-extrusion",
-      minzoom: 15,
-      paint: {
-        "fill-extrusion-color": "#aaa",
-        "fill-extrusion-height": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          15,
-          0,
-          15.05,
-          ["get", "height"],
-        ],
-        "fill-extrusion-base": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          15,
-          0,
-          15.05,
-          ["get", "min_height"],
-        ],
-        "fill-extrusion-opacity": 0.6,
-      },
     });
-  });
 
-    // Navigation controls removed to avoid interference with bottom nav bar
+    map.on('load', () => {
+        map.setConfigProperty("basemap", "lightPreset", "night");
+        map.setConfigProperty("basemap", "showPointOfInterestLabels", false);
+        map.setConfigProperty("basemap", "showPlaceLabels", false);
+        map.setConfigProperty("basemap", "showRoadLabels", false);
+        map.setConfigProperty("basemap", "showTransitLabels", false);
+
+        // Add 3D building layer
+        map.addLayer({
+            'id': '3d-buildings',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+              'fill-extrusion-color': '#aaa',
+              'fill-extrusion-height': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                15, 0, 15.05,
+                ['get', 'height']
+              ],
+              'fill-extrusion-base': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                15, 0, 15.05,
+                ['get', 'min_height']
+              ],
+              'fill-extrusion-opacity': 0.6
+            }
+        });
+    });
 
     // Add user location marker if available
     if (userLocationCoords) {
@@ -546,12 +540,33 @@ function initializeApp() {
 
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', (e) => {
-        const activeLocationFilter = document.querySelector('.location-filter-btn.active').dataset.location;
+        const activeLocationFilter = document.querySelector('.location-filters-container .location-filter-btn.active').dataset.location;
         filterLocationsByArea(activeLocationFilter, e.target.value);
     });
 
+    // Search Overlay Logic
+    const searchIcon = document.querySelector('.search-icon-container');
+    const searchOverlay = document.getElementById('search-overlay');
+    const searchOverlayInput = document.getElementById('search-overlay-input');
+    const closeSearchBtn = document.querySelector('.close-search-btn');
+
+    searchIcon.addEventListener('click', () => {
+        searchOverlay.classList.add('visible');
+        searchOverlayInput.focus();
+    });
+
+    closeSearchBtn.addEventListener('click', () => {
+        searchOverlay.classList.remove('visible');
+    });
+
+    searchOverlayInput.addEventListener('input', (e) => {
+        const activeLocationFilter = document.querySelector('.location-filters-container .location-filter-btn.active').dataset.location;
+        filterLocationsByArea(activeLocationFilter, e.target.value);
+    });
+
+
     // Location filter functionality
-    const locationFilterBtns = document.querySelectorAll('.location-filter-btn');
+    const locationFilterBtns = document.querySelectorAll('.location-filters-container .location-filter-btn');
     locationFilterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             // Remove active class from all buttons
@@ -560,7 +575,7 @@ function initializeApp() {
             btn.classList.add('active');
             
             // Get current search term and apply both filters
-            const searchTerm = searchInput.value;
+            const searchTerm = searchOverlayInput.value;
             const locationFilter = btn.dataset.location;
             filterLocationsByArea(locationFilter, searchTerm);
         });
@@ -604,22 +619,8 @@ function initializeApp() {
   // Supabase Initialization
   // =====================================
   
-  // Initialize Supabase connection
-  if (typeof window.SupabaseClient !== 'undefined') {
-    const supabaseClient = window.SupabaseClient.initialize();
-    
-    if (supabaseClient) {
-      // Test the connection
-      window.SupabaseClient.ping().then(success => {
-        if (success) {
-          console.log('🚀 Supabase integration ready!');
-        }
-      });
-    }
-  } else {
-    console.warn('Supabase client not available. Make sure supabaseClient.js is loaded.');
-  }
-
+  // Removed Supabase client initialization as it's not in use.
+  
     // =====================================
     // Location Overview Functions
     // =====================================

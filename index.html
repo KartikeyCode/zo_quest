@@ -4,8 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#f4f1ea" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Zo Locations Hub</title>
     
     <!-- External Stylesheets -->
@@ -21,6 +25,10 @@
     </div>
 
     <header class="main-header">
+        <img src="zo-white.png" alt="Zo Logo" class="zo-logo">
+        <div class="search-icon-container">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
     </header>
 
     <div id="center-panel">
@@ -31,11 +39,6 @@
 
     <div id="list-container">
         <div class="list-header">
-            <div class="location-filters">
-                <button class="location-filter-btn active" data-location="all">All Areas</button>
-                <button class="location-filter-btn" data-location="bangalore">Bangalore</button>
-                <button class="location-filter-btn" data-location="sanfrancisco">San Francisco</button>
-            </div>
             <div class="search-and-view">
             <div class="search-bar">
                 <input type="text" placeholder="Search locations" id="search-input">
@@ -48,6 +51,20 @@
             </div>
         </div>
         <ul id="location-list"></ul>
+    </div>
+
+    <div class="location-filters-container">
+        <button class="location-filter-btn active" data-location="all">All Areas</button>
+        <button class="location-filter-btn" data-location="bangalore">Bangalore</button>
+        <button class="location-filter-btn" data-location="sanfrancisco">San Francisco</button>
+    </div>
+
+    <!-- Search Overlay -->
+    <div id="search-overlay" class="search-overlay">
+        <div class="search-overlay-content">
+            <input type="text" id="search-overlay-input" placeholder="Search for locations...">
+            <button class="close-search-btn">&times;</button>
+        </div>
     </div>
 
     <!-- Calendar overlay removed since we're showing static locations, not time-based events -->
@@ -66,7 +83,6 @@
 
     <!-- External Scripts -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <!-- Static locations - no database needed -->
     
@@ -75,7 +91,7 @@
 
     <!-- Bottom Navigation Bar -->
     <nav id="bottom-nav" class="bottom-nav">
-      <button class="nav-btn" data-section="members">
+      <button class="nav-btn" data-section="curators">
         <span class="nav-icon">👥</span>
         <span class="nav-label">Curators</span>
       </button>
@@ -83,7 +99,7 @@
         <span class="nav-icon">📍</span>
         <span class="nav-label">Locations</span>
       </button>
-      <button class="nav-btn" data-section="cultures">
+      <button class="nav-btn" data-section="events">
         <span class="nav-icon">🌍</span>
         <span class="nav-label">Events</span>
       </button>
