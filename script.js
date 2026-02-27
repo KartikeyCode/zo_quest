@@ -1230,7 +1230,7 @@
             description: r.description,
             difficulty: r.difficulty,
             reward: parseInt(r.reward, 10) || 0,
-            cooldown_hours: parseInt(r.cooldown_hours, 10) || 24,
+            cooldown_hours: parseFloat(r.cooldown_hours) || 24,
             max_completions: parseInt(r.max_completions, 10) || 0,
             category: r.category,
             slug: r.slug,
