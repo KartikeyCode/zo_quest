@@ -2,10 +2,14 @@
   'use strict';
 
   // =============================================
-  // Configuration
+  // Configuration (loaded from config.js)
   // =============================================
+  var cfg = window.APP_CONFIG || {};
+  var SUPABASE_URL = cfg.SUPABASE_URL || 'YOUR_SUPABASE_URL';
+  var SUPABASE_ANON_KEY = cfg.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+  var sb = null; // initialized in init()
 
-  mapboxgl.accessToken =
+  mapboxgl.accessToken = cfg.MAPBOX_TOKEN ||
     'pk.eyJ1Ijoia3VzaGFsem8iLCJhIjoiY20wcDZtNjUwMDFxNzJpcjYxZjlsN2g3NiJ9.d194ACznKNqKJNfzKyanNQ';
 
   var RISHIKESH_CENTER = [78.32, 30.12];
@@ -29,7 +33,6 @@
     'Market':            { emoji: '🛍️', color: '#ff6348' },
   };
 
-  // Approximate [lng, lat] for each quest slug in Rishikesh
   var COORDS = {
     'triveni-ghat':                [78.2935, 30.1040],
     'shatrughan-ghat':             [78.2948, 30.1025],
@@ -86,10 +89,13 @@
   var activeCategory = 'all';
   var mapReady = false;
   var pendingRender = null;
-  var userLocation = null;   // {lng, lat} from device GPS
-  var fakeLocation = null;   // {lng, lat} for testing
+  var userLocation = null;
+  var fakeLocation = null;
   var fakeMode = false;
-  var userMarker = null;     // mapboxgl.Marker for blue dot
+  var userMarker = null;
+  var currentUser = null;
+  var userProfile = null;
+  var authIsSignUp = true;
 
   // =============================================
   // Geolocation Utilities
@@ -149,28 +155,275 @@
   }
 
   // =============================================
+  // Supabase Auth
+  // =============================================
+
+  async function checkAuth() {
+    if (!sb) return;
+    try {
+      var result = await sb.auth.getSession();
+      if (result.data.session) {
+        currentUser = result.data.session.user;
+        await loadProfile();
+        onAuthSuccess();
+      } else {
+        showAuthModal();
+      }
+    } catch (err) {
+      console.error('Auth check failed:', err);
+      showAuthModal();
+    }
+  }
+
+  async function doSignUp(email, password, username) {
+    var result = await sb.auth.signUp({
+      email: email,
+      password: password,
+      options: { data: { username: username } },
+    });
+    if (result.error) throw result.error;
+    currentUser = result.data.user;
+    await loadProfile();
+    onAuthSuccess();
+  }
+
+  async function doSignIn(email, password) {
+    var result = await sb.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+    if (result.error) throw result.error;
+    currentUser = result.data.user;
+    await loadProfile();
+    onAuthSuccess();
+  }
+
+  async function doSignOut() {
+    await sb.auth.signOut();
+    currentUser = null;
+    userProfile = null;
+    document.getElementById('zo-balance-area').style.display = 'none';
+    document.getElementById('user-menu-btn').style.display = 'none';
+    showAuthModal();
+  }
+
+  function onAuthSuccess() {
+    hideAuthModal();
+    updateZoDisplay();
+    var balArea = document.getElementById('zo-balance-area');
+    if (balArea) balArea.style.display = 'flex';
+    var menuBtn = document.getElementById('user-menu-btn');
+    if (menuBtn) {
+      menuBtn.style.display = 'flex';
+      var name = (userProfile && userProfile.username) ||
+        (currentUser && currentUser.user_metadata && currentUser.user_metadata.username) ||
+        'User';
+      menuBtn.textContent = name + ' (Sign Out)';
+    }
+  }
+
+  // =============================================
+  // Supabase Profile & ZO Balance
+  // =============================================
+
+  async function loadProfile() {
+    if (!currentUser || !sb) return;
+    try {
+      var result = await sb.from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+      if (result.data) {
+        userProfile = result.data;
+      } else {
+        // Profile doesn't exist yet (trigger may not have fired), create it
+        var username = (currentUser.user_metadata && currentUser.user_metadata.username) || 'explorer';
+        var ins = await sb.from('profiles')
+          .insert({ id: currentUser.id, username: username, zo_balance: 0 })
+          .select()
+          .single();
+        userProfile = ins.data || { id: currentUser.id, username: username, zo_balance: 0 };
+      }
+    } catch (err) {
+      console.error('Profile load error:', err);
+      userProfile = { id: currentUser.id, username: 'explorer', zo_balance: 0 };
+    }
+    updateZoDisplay();
+  }
+
+  async function claimQuestReward(reward) {
+    if (!currentUser || !userProfile || !sb) {
+      showToast('Sign in to claim quests');
+      return false;
+    }
+    var newBalance = (userProfile.zo_balance || 0) + reward;
+    var result = await sb.from('profiles')
+      .update({ zo_balance: newBalance })
+      .eq('id', currentUser.id);
+    if (result.error) {
+      showToast('Claim failed: ' + result.error.message);
+      return false;
+    }
+    userProfile.zo_balance = newBalance;
+    updateZoDisplay();
+    return true;
+  }
+
+  function updateZoDisplay() {
+    var el = document.getElementById('zo-balance');
+    if (el && userProfile) {
+      el.textContent = '$' + (userProfile.zo_balance || 0);
+    }
+  }
+
+  // =============================================
+  // Leaderboard
+  // =============================================
+
+  async function loadLeaderboard() {
+    if (!sb) return [];
+    try {
+      var result = await sb.from('profiles')
+        .select('username, zo_balance')
+        .order('zo_balance', { ascending: false })
+        .limit(20);
+      return result.data || [];
+    } catch (err) {
+      console.error('Leaderboard error:', err);
+      return [];
+    }
+  }
+
+  async function showLeaderboard() {
+    var modal = document.getElementById('leaderboard-modal');
+    var list = document.getElementById('leaderboard-list');
+    list.innerHTML = '<li class="lb-empty">Loading...</li>';
+    modal.style.display = 'flex';
+
+    var entries = await loadLeaderboard();
+    if (entries.length === 0) {
+      list.innerHTML = '<li class="lb-empty">No players yet. Claim a quest to be first!</li>';
+      return;
+    }
+
+    var myName = userProfile ? userProfile.username : '';
+    var html = '';
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      var isMe = e.username === myName;
+      html +=
+        '<li class="lb-row' + (isMe ? ' is-me' : '') + '">' +
+          '<span class="lb-rank">' + (i + 1) + '</span>' +
+          '<span class="lb-name">' + (e.username || 'Anonymous') + '</span>' +
+          '<span class="lb-zo">$' + (e.zo_balance || 0) + '</span>' +
+        '</li>';
+    }
+    list.innerHTML = html;
+  }
+
+  // =============================================
+  // Auth Modal UI
+  // =============================================
+
+  function showAuthModal() {
+    document.getElementById('auth-modal').style.display = 'flex';
+    setAuthMode(true);
+  }
+
+  function hideAuthModal() {
+    document.getElementById('auth-modal').style.display = 'none';
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  function setAuthMode(isSignUp) {
+    authIsSignUp = isSignUp;
+    document.getElementById('auth-modal-title').textContent = isSignUp ? 'Sign Up' : 'Log In';
+    document.getElementById('auth-submit-btn').textContent = isSignUp ? 'Sign Up' : 'Log In';
+    document.getElementById('username-field').style.display = isSignUp ? 'block' : 'none';
+    document.getElementById('auth-toggle-link').textContent = isSignUp ? 'Log In' : 'Sign Up';
+    document.querySelector('.auth-toggle').innerHTML = isSignUp
+      ? 'Already have an account? <a href="#" id="auth-toggle-link">Log In</a>'
+      : 'Don\'t have an account? <a href="#" id="auth-toggle-link">Sign Up</a>';
+    // Re-attach toggle link handler
+    document.getElementById('auth-toggle-link').addEventListener('click', function (e) {
+      e.preventDefault();
+      setAuthMode(!authIsSignUp);
+    });
+  }
+
+  function initAuthUI() {
+    var form = document.getElementById('auth-form');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var errEl = document.getElementById('auth-error');
+      var submitBtn = document.getElementById('auth-submit-btn');
+      var email = document.getElementById('auth-email').value.trim();
+      var password = document.getElementById('auth-password').value;
+      var username = document.getElementById('auth-username').value.trim();
+
+      errEl.textContent = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Please wait...';
+
+      try {
+        if (authIsSignUp) {
+          if (!username) {
+            throw { message: 'Username is required' };
+          }
+          await doSignUp(email, password, username);
+        } else {
+          await doSignIn(email, password);
+        }
+      } catch (err) {
+        errEl.textContent = err.message || 'Something went wrong';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = authIsSignUp ? 'Sign Up' : 'Log In';
+      }
+    });
+
+    // Toggle link
+    document.getElementById('auth-toggle-link').addEventListener('click', function (e) {
+      e.preventDefault();
+      setAuthMode(!authIsSignUp);
+    });
+
+    // Sign out button
+    document.getElementById('user-menu-btn').addEventListener('click', function () {
+      doSignOut();
+    });
+
+    // Leaderboard close
+    document.getElementById('leaderboard-close').addEventListener('click', function () {
+      document.getElementById('leaderboard-modal').style.display = 'none';
+    });
+
+    // Close leaderboard on overlay click
+    document.getElementById('leaderboard-modal').addEventListener('click', function (e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+  }
+
+  // =============================================
   // Marker Image Generator (canvas → addImage for GPU rendering)
   // =============================================
 
   function createMarkerImage(emoji, color) {
-    var size = 64; // 2x for retina — displayed at 32px with pixelRatio: 2
+    var size = 64;
     var canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
     var ctx = canvas.getContext('2d');
 
-    // Circle background
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
 
-    // White border
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Emoji
     ctx.font = '26px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -239,11 +492,28 @@
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
+    // Init Supabase client
+    if (window.supabase && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
     initMap();
     loadQuests();
     initNav();
     initGeolocation();
     initFakeLocation();
+    initAuthUI();
+
+    // Check auth — show auth modal if Supabase is configured
+    if (sb) {
+      checkAuth();
+    } else if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+      // Supabase not configured — skip auth entirely, let users browse freely
+      console.warn('Supabase not configured. Auth disabled.');
+    } else {
+      // Config exists but client failed to create
+      showAuthModal();
+    }
   }
 
   // =============================================
@@ -266,7 +536,6 @@
       fadeDuration: 0,
     });
 
-    // Disable heavy stuff for performance
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.touchPitch.disable();
@@ -278,7 +547,6 @@
       map.setConfigProperty('basemap', 'showRoadLabels', false);
       map.setConfigProperty('basemap', 'showTransitLabels', false);
 
-      // Register marker images for each category (canvas → GPU texture)
       var categories = Object.keys(CATEGORIES);
       for (var i = 0; i < categories.length; i++) {
         var cat = categories[i];
@@ -287,13 +555,11 @@
       }
       map.addImage('marker-default', createMarkerImage('📍', '#ff6b35'), { pixelRatio: 2 });
 
-      // GeoJSON source — updated by renderMarkers()
       map.addSource('quest-markers', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       });
 
-      // Main marker icons (GPU-rendered, no DOM jitter)
       map.addLayer({
         id: 'quest-markers-layer',
         type: 'symbol',
@@ -310,7 +576,6 @@
         },
       });
 
-      // Badge background circle for grouped locations
       map.addLayer({
         id: 'quest-badge-bg',
         type: 'circle',
@@ -325,7 +590,6 @@
         },
       });
 
-      // Badge count text
       map.addLayer({
         id: 'quest-badge-text',
         type: 'symbol',
@@ -344,7 +608,6 @@
         },
       });
 
-      // Click: fake location mode OR open popup on marker
       map.on('click', function (e) {
         if (fakeMode) {
           fakeLocation = { lng: e.lngLat.lng, lat: e.lngLat.lat };
@@ -368,7 +631,6 @@
         }
       });
 
-      // Pointer cursor on hover
       map.on('mouseenter', 'quest-markers-layer', function () {
         map.getCanvas().style.cursor = 'pointer';
       });
@@ -378,7 +640,6 @@
 
       mapReady = true;
 
-      // Render quests that loaded before the map was ready
       if (pendingRender) {
         renderMarkers(pendingRender);
         pendingRender = null;
@@ -387,7 +648,6 @@
       hideLoading();
     });
 
-    // Fallback: hide loading after 4s even if map is slow
     setTimeout(hideLoading, 4000);
   }
 
@@ -519,7 +779,6 @@
     }
     list.innerHTML = html;
 
-    // Attach click handlers
     var cards = list.querySelectorAll('.quest-card');
     for (var j = 0; j < cards.length; j++) {
       cards[j].addEventListener('click', onCardClick);
@@ -538,13 +797,11 @@
   // =============================================
 
   function renderMarkers(quests) {
-    // Buffer data if map layers aren't ready yet
     if (!mapReady) {
       pendingRender = quests;
       return;
     }
 
-    // Group by slug (one marker per physical location)
     var groups = {};
     for (var j = 0; j < quests.length; j++) {
       var q = quests[j];
@@ -572,7 +829,6 @@
       });
     }
 
-    // Update GeoJSON source — Mapbox handles the GPU re-render
     map.getSource('quest-markers').setData({
       type: 'FeatureCollection',
       features: features,
@@ -590,9 +846,11 @@
     }
 
     var locationName = quests[0].title;
+    var totalReward = 0;
     var rows = '';
     for (var i = 0; i < quests.length; i++) {
       var q = quests[i];
+      totalReward += q.reward;
       rows +=
         '<div class="popup-quest-row">' +
           '<span class="popup-cat-label">' + q.meta.emoji + ' ' + q.category + '</span>' +
@@ -600,7 +858,6 @@
         '</div>';
     }
 
-    // Build claim section based on proximity
     var claimHTML = '';
     var loc = getEffectiveLocation();
     if (!loc) {
@@ -608,7 +865,7 @@
     } else {
       var dist = haversineDistance(loc.lat, loc.lng, coords[1], coords[0]);
       if (dist <= 50) {
-        claimHTML = '<div class="popup-claim claimable"><button class="claim-btn">Claim Quest</button></div>';
+        claimHTML = '<div class="popup-claim claimable"><button class="claim-btn" data-reward="' + totalReward + '">Claim Quest ($' + totalReward + ')</button></div>';
       } else {
         var distStr = dist < 1000 ? Math.round(dist) + 'm' : (dist / 1000).toFixed(1) + 'km';
         claimHTML = '<div class="popup-claim not-claimable"><span class="claim-status">' + distStr + ' away — get within 50m</span></div>';
@@ -633,13 +890,27 @@
       .setHTML(html)
       .addTo(map);
 
-    // Attach claim button handler
     var claimBtn = currentPopup.getElement().querySelector('.claim-btn');
     if (claimBtn) {
-      claimBtn.addEventListener('click', function () {
-        showToast('Quest Claimed!');
-        currentPopup.remove();
-        currentPopup = null;
+      claimBtn.addEventListener('click', async function () {
+        var reward = parseInt(this.dataset.reward, 10) || 0;
+        if (!currentUser) {
+          showToast('Sign in to claim quests');
+          return;
+        }
+        this.disabled = true;
+        this.textContent = 'Claiming...';
+        var success = await claimQuestReward(reward);
+        if (success) {
+          showToast('Claimed $' + reward + ' ZO!');
+          if (currentPopup) {
+            currentPopup.remove();
+            currentPopup = null;
+          }
+        } else {
+          this.disabled = false;
+          this.textContent = 'Claim Quest ($' + reward + ')';
+        }
       });
     }
   }
@@ -677,6 +948,10 @@
         var section = this.dataset.section;
         if (section === 'events') {
           showToast('Events — Coming Soon!');
+          return;
+        }
+        if (section === 'leaderboard') {
+          showLeaderboard();
           return;
         }
         var all = document.querySelectorAll('.bottom-nav .nav-btn');

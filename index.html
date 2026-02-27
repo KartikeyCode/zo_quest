@@ -25,9 +25,14 @@
       <img src="zo-white.png" alt="Zo" class="zo-logo">
       <span class="header-divider"></span>
       <span class="header-title">Rishikesh</span>
+      <div class="zo-balance-badge" id="zo-balance-area" style="display:none;">
+        <span class="zo-balance-icon">⚡</span>
+        <span id="zo-balance">$0</span>
+      </div>
     </header>
 
-    <!-- Fake location toggle (testing) -->
+    <!-- User menu & fake location -->
+    <button id="user-menu-btn" class="user-menu-btn" style="display:none;">Sign Out</button>
     <button id="fake-location-btn" class="fake-location-btn" title="Fake Location (Testing)">📍</button>
 
     <!-- Category filter pills -->
@@ -41,6 +46,40 @@
         <span id="quest-count" class="quest-count">0</span>
       </div>
       <ul id="quest-list" class="quest-list"></ul>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <h2 class="modal-title" id="auth-modal-title">Sign Up</h2>
+        <form id="auth-form">
+          <div id="username-field" class="form-group">
+            <input type="text" id="auth-username" placeholder="Username">
+          </div>
+          <div class="form-group">
+            <input type="email" id="auth-email" placeholder="Email" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="auth-password" placeholder="Password (min 6 chars)" required minlength="6">
+          </div>
+          <div id="auth-error" class="form-error"></div>
+          <button type="submit" class="auth-submit-btn" id="auth-submit-btn">Sign Up</button>
+        </form>
+        <p class="auth-toggle">
+          Already have an account? <a href="#" id="auth-toggle-link">Log In</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboard-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card leaderboard-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Leaderboard</h2>
+          <button id="leaderboard-close" class="modal-close">&times;</button>
+        </div>
+        <ul id="leaderboard-list" class="leaderboard-list"></ul>
+      </div>
     </div>
 
     <!-- Toast -->
@@ -61,6 +100,10 @@
         <span class="nav-icon">⚡</span>
         <span class="nav-label">Quests</span>
       </button>
+      <button class="nav-btn" data-section="leaderboard">
+        <span class="nav-icon">🏆</span>
+        <span class="nav-label">Rank</span>
+      </button>
       <button class="nav-btn" data-section="events">
         <span class="nav-icon">🎉</span>
         <span class="nav-label">Events</span>
@@ -69,6 +112,8 @@
 
     <!-- Scripts -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
