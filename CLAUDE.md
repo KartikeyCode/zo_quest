@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Zo Quest — an interactive, mobile-first quest map for Rishikesh. Users explore quests (locations, activities, food spots) on a dark-themed Mapbox map, filter by category, and earn ZO tokens. Built as a static web app with no build system, no frameworks, and no backend.
+Zo Quest — an interactive, mobile-first quest map for Rishikesh. Users explore quests (locations, activities, food spots) on a dark-themed Mapbox map, filter by category, earn $ZO tokens by taking selfies at quest locations, and compete on a leaderboard.
 
 ## Tech Stack
 
 - Vanilla HTML/CSS/JavaScript (no npm, no bundler, no framework)
 - Mapbox GL JS v3.1.2 for map rendering
-- Deployed on Vercel as a static site (auto-detected, no vercel.json)
+- Supabase (via CDN) for auth, database (profiles, quest_claims), and storage (selfies bucket)
+- Deployed on Vercel as a static site with `vercel.json` build command
 
 ## Development
 
@@ -24,34 +25,73 @@ python -m http.server
 
 There are no tests, no linter, and no CI pipeline.
 
+### Configuration
+
+API keys live in `config.js` (gitignored). Copy `config.example.js` to `config.js` and fill in real keys:
+
+- `SUPABASE_URL` — Supabase project URL
+- `SUPABASE_ANON_KEY` — Supabase anon/public key (starts with `eyJhbGci...`)
+- `MAPBOX_TOKEN` — Mapbox GL access token
+
+On Vercel, `config.js` is generated at build time from environment variables via `vercel.json`.
+
 ## Architecture
 
 ### Files
 
-- **index.html** — DOM structure: map, header, category filters, quest panel, bottom nav, toast, loading screen
-- **script.js** (~300 lines) — IIFE with all app logic: CSV parsing, map setup, marker/popup rendering, filtering, navigation
-- **styles.css** (~400 lines) — Black/orange theme, CSS-only animations, mobile-first responsive layout
-- **rishikesh_quests.csv** — Quest data: id, title, description, difficulty, reward, category, slug (48 quests across 12 categories)
+- **index.html** — DOM: map, header, category filters, quest panel, auth modal, leaderboard modal, bottom nav, selfie input, toast, loading screen
+- **script.js** (~1100 lines) — Single IIFE with all app logic
+- **styles.css** (~975 lines) — Black/orange theme, CSS-only animations, mobile-first responsive
+- **rishikesh_quests.csv** — Quest data: 48 quests across 12 categories, with Location column (`"lat, lng"` format)
+- **rishikesh_quests_locations.csv** — Reference file with accurate GPS coordinates (used for Location merge)
+- **config.js** — Gitignored. Sets `window.APP_CONFIG` with API keys
+- **config.example.js** — Committed template for config.js
+- **vercel.json** — Build command that generates config.js from Vercel env vars
 
 ### script.js Structure
 
 Single IIFE `(function() { ... })()` with DOMContentLoaded entry point. Key sections:
 
-- **Config** — Mapbox token, Rishikesh center/bounds, `CATEGORIES` metadata (emoji + color per category), `COORDS` mapping (slug → [lng, lat])
+- **Config** — Reads `window.APP_CONFIG` for Supabase/Mapbox keys; `CATEGORIES` metadata (emoji + color per category); `COORDS` fallback mapping (slug → [lng, lat])
+- **State** — Global vars: `map`, `allQuests`, `filteredQuests`, `currentUser`, `userProfile`, `userLocation`, `fakeLocation`, `fakeMode`
+- **Supabase Init** — Creates client in `init()`, checks for placeholder URLs to skip auth gracefully
+- **Auth** — `checkAuth()`, `signUp()`, `signIn()`, `signOut()` via Supabase Auth; auth modal toggle between sign-up/login
+- **Profiles** — `loadProfile()` fetches/creates user profile with `zo_balance`; `updateZoDisplay()` updates header badge
+- **Claims & Cooldown** — `claimQuestReward()` updates balance + inserts `quest_claims` row; `checkCooldown()` queries last claim time per slug; `checkAndShowClaim()` async UI update in popup
+- **Selfie** — `startSelfieClaim()` opens rear camera; `handleSelfieCapture()` shows preview + confirm; `uploadSelfie()` uploads to Supabase Storage `selfies` bucket
+- **Geolocation** — Browser geolocation + fake location mode (testing pin); `haversineDistance()` for 50m proximity check
 - **CSV Parser** — `parseCSVRow()` / `parseCSV()` handle quoted fields with escaped double-quotes
-- **Map** — `initMap()` creates Mapbox map bounded to Rishikesh, night mode, rotation disabled for perf
-- **Quest Loading** — `loadQuests()` fetches CSV, filters to quests with matching coordinates, populates state
-- **Rendering** — `renderCategoryFilters()`, `renderQuests()` (horizontal card list), `renderMarkers()` (grouped by slug)
-- **Popups** — `openPopup()` creates dark-themed popup showing all quests at a location; `flyToQuest()` animates map
-- **Navigation** — `initNav()` handles bottom nav; Events tab shows "Coming Soon" toast
+- **Map** — `initMap()` creates Mapbox map bounded to Rishikesh, night mode, rotation disabled
+- **Quest Loading** — `loadQuests()` fetches CSV, parses Location column (with COORDS fallback), populates state
+- **Rendering** — `renderCategoryFilters()`, `renderQuests()` (card list), `renderMarkers()` (grouped by slug)
+- **Popups** — `openPopup()` shows quests at location with proximity-based claim UI; `flyToQuest()` animates map
+- **Leaderboard** — `loadLeaderboard()` queries profiles ordered by zo_balance
+- **Navigation** — `initNav()` handles bottom nav (Quests/Rank/Events); Events shows "Coming Soon"
 
 ### Quest Data Flow
 
 1. CSV fetched → parsed with custom parser
-2. Each row matched to coordinates via `COORDS[slug]`
-3. Quests without matching coords are filtered out (e.g., the "game-1111" daily quest)
-4. Quests grouped by slug for map markers (one marker per physical location)
+2. Each row gets coordinates from its `Location` column (`"lat, lng"` format), falling back to `COORDS[slug]`
+3. Quests without coords are filtered out (e.g., "game-1111" daily quest)
+4. Quests grouped by slug for map markers (one marker per physical location, may have multiple quests)
 5. Category filter re-renders both the card list and markers
+
+### Claim Flow
+
+1. User taps a marker → popup shows quests at that location
+2. If user is >50m away → shows distance, no claim button
+3. If within 50m → async checks cooldown via `quest_claims` table
+4. If on cooldown → shows remaining time
+5. If claimable → shows "Take Selfie to Claim" button
+6. Camera opens (rear, no gallery) → selfie preview → confirm
+7. Selfie uploads to Supabase Storage → balance updated → claim recorded
+
+### Supabase Tables
+
+- **profiles** — `id` (UUID, references auth.users), `username`, `zo_balance` (integer)
+- **quest_claims** — `id`, `user_id`, `quest_id`, `slug`, `reward`, `selfie_url`, `claimed_at` (timestamptz, default now())
+
+Both tables have RLS enabled (users can only read/write their own rows).
 
 ### CSS Design System
 
@@ -69,198 +109,30 @@ Each quest category has its own color defined in `CATEGORIES` in script.js.
 
 ### Mobile vs Desktop
 
-- Mobile (≤768px): horizontal card carousel at bottom, category pills above cards, bottom gradient on map
-- Desktop (≥769px): 340px right sidebar with vertical quest list, category pills float on map top-left
-- Bottom nav: 64px fixed, Quests (active) + Events (coming soon)
+- Mobile (<=768px): horizontal card carousel at bottom, category pills above cards, bottom gradient on map
+- Desktop (>=769px): 340px right sidebar with vertical quest list, category pills float on map top-left
+- Bottom nav: 64px fixed — Quests (active), Rank (leaderboard), Events (coming soon)
 
 ### Map Configuration
 
-- Bounded to Rishikesh area: `[[78.10, 29.95], [78.55, 30.30]]`
+- Bounded to Rishikesh area: `[[78.05, 29.90], [78.60, 30.35]]`
 - Center: `[78.32, 30.12]`, zoom 11.5 mobile / 12.5 desktop
-- Night mode basemap, hidden labels, rotation disabled for mobile performance
-- No 3D building layer (removed for performance)
+- Night mode basemap, rotation disabled for mobile performance
 - Custom HTML markers with category emoji + color, grouped by location slug
 
-### Performance Optimizations
+### Coordinate Format
 
-- No GIFs — CSS-only spinner for loading
-- No backdrop-filter on mobile (solid/semi-transparent backgrounds)
-- All animations use only transform + opacity (GPU-accelerated)
-- Map rotation/drag-rotate disabled
-- No 3D building extrusion layer
-- Markers grouped by slug to minimize DOM elements
-
-## Assets
-
-`Assets/` directory: logos (zo-white.png), favicon (icon.png). The Z_to_House.gif and spinner GIF are no longer used.
+- CSV `Location` column: `"lat, lng"` (latitude first, comma-separated, quoted in CSV)
+- Mapbox / `COORDS` object: `[lng, lat]` (longitude first)
+- The `loadQuests()` parser handles the conversion
 
 ## Adding New Quest Locations
 
-1. Add the quest row to `rishikesh_quests.csv` with a unique slug
-2. Add the slug's `[lng, lat]` coordinates to the `COORDS` object in script.js
+1. Add the quest row to `rishikesh_quests.csv` with a unique slug and `Location` column (`"lat, lng"`)
+2. Optionally add the slug to the `COORDS` object in script.js as a fallback
 3. If the category is new, add it to the `CATEGORIES` object with emoji and color
 
-# Mapbox Documentation
+## Mapbox Reference
 
-> Mapbox is a developer platform for mapping, location search, and navigation. Developers can use Mapbox's APIs, SDKs, and tools to build custom maps, add location search, and implement navigation features into web and mobile applications. This file contains information and links to the documentation for all products in the Mapbox ecosystem.
-
-## Maps client libraries & SDKs
-
-- [Mapbox GL JS - GL JS Docs](https://docs.mapbox.com/mapbox-gl-js/)
-- [Mapbox GL JS - JS Frameworks](https://docs.mapbox.com/mapbox-gl-js/plugins/#framework-integrations)
-- [Mobile SDKs - iOS SDK Docs](https://docs.mapbox.com/ios/)
-- [Mobile SDKs - Android SDK Docs](https://docs.mapbox.com/android/)
-- [Mobile SDKs - Flutter SDK Docs](https://docs.mapbox.com/flutter/)
-
-## Data loading & access APIs
-
-- [Mapbox Tiling Service - API Docs](https://docs.mapbox.com/api/maps/mapbox-tiling-service/)
-- [Mapbox Tiling Service - MTS Manual](https://docs.mapbox.com/mapbox-tiling-service/)
-- [Uploads API - API Docs](https://docs.mapbox.com/api/maps/uploads/)
-- [Datasets API - API Docs](https://docs.mapbox.com/api/maps/datasets/)
-- [Tilequery API - API Docs](https://docs.mapbox.com/api/maps/tilequery/)
-- [Tilequery API - API Playground](https://docs.mapbox.com/playground/tilequery/)
-
-## Tiling & rendering APIs
-
-- [Vector Tiles API - API Docs](https://docs.mapbox.com/api/maps/vector-tiles/)
-- [Raster Tiles API - API Docs](https://docs.mapbox.com/api/maps/raster-tiles/)
-- [Static Images API - API Docs](https://docs.mapbox.com/api/maps/static-images/)
-- [Static Images API - API Playground](https://docs.mapbox.com/playground/static/)
-- [Static Tiles API - API Docs](https://docs.mapbox.com/api/maps/static-tiles/)
-
-## Map design
-
-- [Mapbox Studio - Studio Manual](https://docs.mapbox.com/studio-manual/)
-- [Mapbox Studio - Studio Login](https://studio.mapbox.com/)
-- [Style Specification - View the Spec](https://docs.mapbox.com/style-spec/)
-- [Mapbox Standard Style - View the docs](https://docs.mapbox.com/map-styles/standard/)
-- [Styles API - API Docs](https://docs.mapbox.com/api/maps/styles/)
-- [Fonts API - API Docs](https://docs.mapbox.com/api/maps/fonts/)
-
-## Navigation client SDKs
-
-- [Navigation SDK - iOS SDK Docs](https://docs.mapbox.com/ios/navigation/)
-- [Navigation SDK - Android SDK Docs](https://docs.mapbox.com/android/navigation/guides/)
-
-## Navigation APIs
-
-- [Directions API - API Docs](https://docs.mapbox.com/api/navigation/directions/)
-- [Directions API - API Playground](https://docs.mapbox.com/playground/directions/)
-- [Map Matching API - API Docs](https://docs.mapbox.com/api/navigation/map-matching/)
-- [Isochrone API - API Docs](https://docs.mapbox.com/api/navigation/isochrone/)
-- [Isochrone API - API Playground](https://docs.mapbox.com/playground/isochrone/)
-- [Optimization API - API Docs](https://docs.mapbox.com/api/navigation/optimization/)
-- [Optimization API - Demo](https://demos.mapbox.com/optimization-v2-playground/)
-- [Matrix API - API Docs](https://docs.mapbox.com/api/navigation/matrix/)
-- [EV Charge Finder API - API Docs](https://docs.mapbox.com/api/navigation/ev-charge-finder/)
-- [EV Charge Finder API - API Playground](https://docs.mapbox.com/playground/ev-charge-finder/)
-
-## Search client libraries & SDKs
-
-- [Mapbox Search JS - Search JS Docs](https://docs.mapbox.com/mapbox-search-js/)
-- [Search Mobile SDKs - iOS SDK Docs](https://docs.mapbox.com/ios/search/overview/)
-- [Search Mobile SDKs - Android SDK Docs](https://docs.mapbox.com/android/search/overview/)
-- [Mapbox GL Geocoder - Github Repo](https://github.com/mapbox/mapbox-gl-geocoder)
-
-## Search APIs
-
-- [Geocoding API - API Docs](https://docs.mapbox.com/api/search/geocoding/)
-- [Geocoding API - API Playground](https://docs.mapbox.com/playground/geocoding/)
-- [Search Box API - API Docs](https://docs.mapbox.com/api/search/search-box/)
-- [Search Box API - API Playground](https://docs.mapbox.com/playground/search-box/)
-
-## Mapbox Tilesets
-
-- [Vector Tilesets - All Tileset Docs](https://docs.mapbox.com/data/tilesets/reference/)
-- [Raster Tilesets - All Tileset Docs](https://docs.mapbox.com/data/tilesets/reference/)
-
-## Specialty data products
-
-- [Mapbox Boundaries - Dataset Docs](https://docs.mapbox.com/data/boundaries/)
-- [Mapbox Movement - Dataset Docs](https://docs.mapbox.com/data/movement/)
-- [Traffic Data - Dataset Docs](https://docs.mapbox.com/data/traffic/)
-
-## Accounts and Pricing
-
-- [Accounts and Pricing Account Docs](https://docs.mapbox.com/accounts/)
-
-## Tokens API
-
-- [Tokens API Tokens API](https://docs.mapbox.com/api/accounts/tokens/)
-
-## Atlas
-
-- [Atlas Atlas Docs](https://docs.mapbox.com/atlas)
-
-## Mapbox in Tableau
-
-- [Mapbox in Tableau Tableau Extension Docs](https://docs.mapbox.com/geographic-analytics/overview/)
-
-## Android Core library
-
-- [Android Core library Library Docs](https://docs.mapbox.com/android/core/guides/)
-
-## Maps SDK for Unity
-
-- [Maps SDK for Unity SDK Docs](https://docs.mapbox.com/unity/maps/guides/)
-
-## Mapbox AI Tools
-
-- [Mapbox AI Tools MCP Server](https://docs.mapbox.com/api/guides/mcp-server/)
-- [Mapbox AI Tools DevKit MCP Server](https://docs.mapbox.com/api/guides/devkit-mcp-server/)
-- [Mapbox AI Tools Agent Skills](https://docs.mapbox.com/api/guides/mapbox-agent-skills/)
-
-## Geospatial Dev Tools
-
-- [Geospatial Dev Tools geojson.io](https://geojson.io)
-- [Geospatial Dev Tools Location Helper](https://labs.mapbox.com/location-helper/)
-- [Geospatial Dev Tools Bezier Curves](https://labs.mapbox.com/bezier-curves/)
-- [Geospatial Dev Tools What the Tile](https://labs.mapbox.com/what-the-tile/)
-- [Geospatial Dev Tools See all Dev Tools](https://docs.mapbox.com/resources/dev-tools/)
-
-## Map Design
-
-- [Map Design Mapbox Studio](https://studio.mapbox.com)
-- [Map Design Cartogram](https://apps.mapbox.com/cartogram)
-- [Map Design Maki Icon Editor](https://labs.mapbox.com/maki-icons/)
-- [Map Design Mapbox Core Styles](https://docs.mapbox.com/api/maps/styles/#mapbox-styles)
-- [Map Design Style Gallery](https://www.mapbox.com/gallery/)
-
-## API Playgrounds
-
-- [API Playgrounds Directions API](https://docs.mapbox.com/playground/directions/)
-- [API Playgrounds Search Box API](https://docs.mapbox.com/playground/search-box/)
-- [API Playgrounds Static Images API](https://docs.mapbox.com/playground/static/)
-- [API Playgrounds Isochrone API](https://docs.mapbox.com/playground/isochrone/)
-- [API Playgrounds See all](https://docs.mapbox.com/playground/)
-
-## Open Code
-
-- [Open Code Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec)
-- [Open Code Rasterio](https://github.com/mapbox/rasterio)
-- [Open Code PixelMatch](https://github.com/mapbox/pixelmatch)
-- [Open Code See all](https://github.com/mapbox/)
-
-## Developers
-
-- [Developers Developer AI Assistant](/ask-ai/)
-- [Developers Developer Cheatsheet](https://labs.mapbox.com/developer-cheatsheet/)
-- [Developers MapboxDevs Discord](https://discord.gg/UshjQYyDFw)
-- [Developers @Mapbox on Twitter](https://twitter.com/mapbox)
-- [Developers Events](https://www.mapbox.com/webinars)
-
-## Demos & Projects
-
-- [Demos & Projects Real Estate Demo App](https://labs.mapbox.com/demo-realestate/)
-- [Demos & Projects Store Locator Demo App](https://labs.mapbox.com/demo-store-locator/)
-- [Demos & Projects Isochrone Intersect Demo](https://labs.mapbox.com/isochrone-intersect/)
-- [Demos & Projects See all](https://docs.mapbox.com/resources/demos-and-projects/)
-
-## Web service interfaces
-
-- [Web service interfaces JavaScript](https://github.com/mapbox/mapbox-sdk-js)
-- [Web service interfaces Python](https://github.com/mapbox/mapbox-cli-py)
-- [Web service interfaces Java](https://docs.mapbox.com/android/java/overview/)
-- [Web service interfaces Ruby](https://github.com/mapbox/mapbox-sdk-rb)
-- [Web service interfaces See all](https://docs.mapbox.com/api/overview/#sdk-and-library-support)
+- [Mapbox GL JS Docs](https://docs.mapbox.com/mapbox-gl-js/)
+- [Style Specification](https://docs.mapbox.com/style-spec/)

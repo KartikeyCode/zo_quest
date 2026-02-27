@@ -293,6 +293,37 @@ html {
 }
 
 /* =============================================
+   Node Event Rows (inside node cards)
+   ============================================= */
+.node-events-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.node-event-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+}
+
+.node-event-emoji {
+  flex-shrink: 0;
+}
+
+.node-event-title {
+  flex: 1;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =============================================
    Map Markers
    ============================================= */
 .quest-marker {
@@ -603,19 +634,306 @@ html {
   background: var(--accent-light);
 }
 
+.claim-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .claim-status {
   font-size: 0.75rem;
   color: var(--text-dim);
 }
 
 /* =============================================
-   Fake Location Toggle
+   Camera Modal (full-screen capture)
    ============================================= */
-.fake-location-btn {
+.camera-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#camera-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.camera-shutter-bar {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.camera-shutter-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #fff;
+  border: 5px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.camera-shutter-btn:active {
+  transform: scale(0.88);
+}
+
+.camera-confirm-bar {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  z-index: 10;
+  padding: 0 24px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.camera-action-btn {
+  flex: 1;
+  max-width: 160px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s;
+}
+
+.camera-action-btn:active {
+  transform: scale(0.96);
+}
+
+.camera-retake {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.camera-use {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* =============================================
+   Profile Modal
+   ============================================= */
+.profile-card {
+  max-width: 400px;
+}
+
+.profile-header-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 107, 53, 0.12);
+  border: 1px solid rgba(255, 107, 53, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.profile-username {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.profile-stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.profile-stat-box {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.profile-stat-val {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.profile-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profile-rank-box {
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.profile-rank-box:hover {
+  border-color: var(--accent);
+}
+
+.profile-section-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin: 0 0 10px;
+}
+
+.profile-claims-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.profile-claim-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-claim-row:last-child {
+  border-bottom: none;
+}
+
+.profile-claim-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-claim-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-claim-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.profile-claim-reward {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+  margin-left: 12px;
+}
+
+.profile-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 20px 0;
+  font-size: 0.85rem;
+}
+
+.profile-logout-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: rgba(255, 71, 87, 0.1);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-logout-btn:hover {
+  background: rgba(255, 71, 87, 0.2);
+}
+
+/* =============================================
+   Top-Right Actions Container
+   ============================================= */
+.top-right-actions {
   position: fixed;
   top: 16px;
   right: 16px;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =============================================
+   Fake Location Toggle
+   ============================================= */
+.fake-location-btn {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -629,6 +947,7 @@ html {
   justify-content: center;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 .fake-location-btn.active {
@@ -644,7 +963,6 @@ html {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-left: auto;
   padding: 4px 12px;
   background: rgba(255, 107, 53, 0.12);
   border: 1px solid rgba(255, 107, 53, 0.25);
@@ -653,6 +971,7 @@ html {
   font-weight: 700;
   color: var(--accent);
   white-space: nowrap;
+  height: 36px;
 }
 
 .zo-balance-icon {
@@ -858,10 +1177,6 @@ html {
 
 /* User menu button */
 .user-menu-btn {
-  position: fixed;
-  top: 16px;
-  right: 60px;
-  z-index: 100;
   height: 36px;
   padding: 0 14px;
   border-radius: 18px;
@@ -877,6 +1192,8 @@ html {
   gap: 6px;
   transition: background 0.2s, border-color 0.2s;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .user-menu-btn:hover {
@@ -924,11 +1241,25 @@ html {
    ============================================= */
 @media (min-width: 769px) {
   .category-filters {
+    position: fixed;
+    bottom: auto;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
     justify-content: center;
+    flex-wrap: wrap;
+    max-width: 700px;
+    padding: 0 20px;
   }
 
   .quest-list {
+    flex-wrap: wrap;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 240px;
     justify-content: center;
+    padding-bottom: 16px;
   }
 
   .quest-panel-header {
@@ -937,6 +1268,18 @@ html {
 
   .quest-card {
     width: 200px;
+  }
+}
+
+/* =============================================
+   Mobile header fix — ZO badge below header
+   ============================================= */
+@media (max-width: 768px) {
+  .zo-balance-badge {
+    position: fixed;
+    top: 54px;
+    left: 16px;
+    z-index: 10;
   }
 }
 

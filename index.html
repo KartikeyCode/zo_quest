@@ -25,15 +25,17 @@
       <img src="zo-white.png" alt="Zo" class="zo-logo">
       <span class="header-divider"></span>
       <span class="header-title">Rishikesh</span>
+    </header>
+
+    <!-- Top-right actions (ZO badge + user menu + fake location) -->
+    <div class="top-right-actions">
       <div class="zo-balance-badge" id="zo-balance-area" style="display:none;">
         <span class="zo-balance-icon">⚡</span>
         <span id="zo-balance">$0</span>
       </div>
-    </header>
-
-    <!-- User menu & fake location -->
-    <button id="user-menu-btn" class="user-menu-btn" style="display:none;">Sign Out</button>
-    <button id="fake-location-btn" class="fake-location-btn" title="Fake Location (Testing)">📍</button>
+      <button id="user-menu-btn" class="user-menu-btn" style="display:none;">Sign Out</button>
+      <button id="fake-location-btn" class="fake-location-btn" title="Fake Location (Testing)">📍</button>
+    </div>
 
     <!-- Category filter pills -->
     <div id="category-filters" class="category-filters"></div>
@@ -48,6 +50,16 @@
       <ul id="quest-list" class="quest-list"></ul>
     </div>
 
+    <!-- Nodes Panel -->
+    <div id="nodes-panel" class="quest-panel" style="display:none;">
+      <div class="quest-panel-handle"></div>
+      <div class="quest-panel-header">
+        <span class="quest-panel-title">Nodes</span>
+        <span id="node-count" class="quest-count">0</span>
+      </div>
+      <ul id="node-list" class="quest-list"></ul>
+    </div>
+
     <!-- Auth Modal -->
     <div id="auth-modal" class="modal-overlay" style="display:none;">
       <div class="modal-card">
@@ -57,7 +69,7 @@
             <input type="text" id="auth-username" placeholder="Username">
           </div>
           <div class="form-group">
-            <input type="email" id="auth-email" placeholder="Email" required>
+            <input type="tel" id="auth-phone" placeholder="Phone number (10 digits)" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" required>
           </div>
           <div class="form-group">
             <input type="password" id="auth-password" placeholder="Password (min 6 chars)" required minlength="6">
@@ -79,6 +91,52 @@
           <button id="leaderboard-close" class="modal-close">&times;</button>
         </div>
         <ul id="leaderboard-list" class="leaderboard-list"></ul>
+      </div>
+    </div>
+
+    <!-- Camera Modal (full-screen in-browser capture) -->
+    <div id="camera-modal" class="camera-modal" style="display:none;">
+      <video id="camera-video" autoplay playsinline muted></video>
+      <canvas id="camera-canvas" style="display:none;"></canvas>
+      <img id="camera-preview" style="display:none;" alt="Preview">
+      <button id="camera-close-btn" class="camera-close-btn">&times;</button>
+      <div id="camera-shutter-bar" class="camera-shutter-bar">
+        <button id="camera-shutter-btn" class="camera-shutter-btn"></button>
+      </div>
+      <div id="camera-confirm-bar" class="camera-confirm-bar" style="display:none;">
+        <button id="camera-retake-btn" class="camera-action-btn camera-retake">Retake</button>
+        <button id="camera-use-btn" class="camera-action-btn camera-use">Use Photo</button>
+      </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card profile-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Profile</h2>
+          <button id="profile-close" class="modal-close">&times;</button>
+        </div>
+        <div class="profile-header-info">
+          <div class="profile-avatar">👤</div>
+          <h3 id="profile-username" class="profile-username"></h3>
+        </div>
+        <div class="profile-stats-row">
+          <div class="profile-stat-box">
+            <span class="profile-stat-val" id="profile-total-zo">$ZO 0</span>
+            <span class="profile-stat-label">Total Earned</span>
+          </div>
+          <div class="profile-stat-box profile-rank-box" id="profile-rank-box">
+            <span class="profile-stat-val" id="profile-rank">#-</span>
+            <span class="profile-stat-label">Rank</span>
+          </div>
+        </div>
+        <div class="profile-claims-section">
+          <h4 class="profile-section-title">Claimed Quests</h4>
+          <ul id="profile-claims-list" class="profile-claims-list">
+            <li class="profile-empty">No quests claimed yet</li>
+          </ul>
+        </div>
+        <button id="profile-logout-btn" class="profile-logout-btn">Sign Out</button>
       </div>
     </div>
 
@@ -104,9 +162,9 @@
         <span class="nav-icon">🏆</span>
         <span class="nav-label">Rank</span>
       </button>
-      <button class="nav-btn" data-section="events">
-        <span class="nav-icon">🎉</span>
-        <span class="nav-label">Events</span>
+      <button class="nav-btn" data-section="nodes">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Nodes</span>
       </button>
     </nav>
 

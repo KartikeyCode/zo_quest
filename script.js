@@ -28,54 +28,54 @@
     'Sunset View Point': { emoji: '🌅', color: '#f39c12' },
     'Day Tour':          { emoji: '🚶', color: '#2ecc71' },
     'Cafes':             { emoji: '☕', color: '#e67e5c' },
-    'Adventure':         { emoji: '🪂', color: '#ff4757' },
     'Street Food':       { emoji: '🍜', color: '#ffa502' },
     'Market':            { emoji: '🛍️', color: '#ff6348' },
+    'Event':             { emoji: '🎉', color: '#e74c3c' },
+    'Zostel':            { emoji: '🏠', color: '#1abc9c' },
   };
 
   var COORDS = {
-    'triveni-ghat':                [78.2935, 30.1040],
-    'shatrughan-ghat':             [78.2948, 30.1025],
-    'parmarth-niketan':            [78.3070, 30.1215],
-    'namami-beach':                [78.3010, 30.1150],
-    'shivpuri-beach':              [78.3840, 30.1480],
-    'neem-beach':                  [78.3030, 30.1170],
-    'goa-beach':                   [78.3160, 30.1260],
-    'kodiyala':                    [78.3960, 30.1670],
-    'neer-waterfall-5-phases':     [78.3150, 30.1190],
-    'garunchatti-waterfall-3-phases': [78.2820, 30.1005],
-    'himshaili-waterfall':         [78.2750, 30.1080],
-    'secret-waterfall':            [78.2770, 30.1045],
-    'patna-waterfall':             [78.2640, 30.0940],
-    'bahubali-waterfall':          [78.2680, 30.0970],
-    '84-kutiya':                   [78.3060, 30.1243],
-    'rani-temple':                 [78.2920, 30.1100],
-    'balkumar-temple':             [78.2900, 30.1050],
-    'bhutnath-temple':             [78.2890, 30.1030],
-    'garun-chatti-mandir':         [78.2810, 30.1010],
-    'triyamkeshwar-mandir':        [78.2870, 30.1060],
-    'neelkanth-mahadev':           [78.3578, 30.1440],
-    'vashisht-caves':              [78.3100, 30.1200],
-    'jhil-mil-cave':               [78.3200, 30.1250],
-    'tat-cave':                    [78.3150, 30.1300],
-    'moni-baba-cave':              [78.3180, 30.1280],
-    'kyarki-village':              [78.2800, 30.1400],
-    'kunjapuri-mata-mandir':       [78.3296, 30.1479],
-    'narendra-nagar-view-point':   [78.2920, 30.1640],
-    'kunjapuri-':                  [78.3300, 30.1485],
-    'kodiyala-village':            [78.3965, 30.1675],
-    'mini-gartang-gali':           [78.3300, 30.1350],
-    'amma-ki-rasoi':               [78.2945, 30.1105],
-    'little-buddha':               [78.3075, 30.1218],
-    'ganga-view-':                 [78.2955, 30.1135],
-    'beatles-cafe':                [78.3125, 30.1255],
-    'mount-bistro':                [78.2985, 30.1165],
-    'rafting':                     [78.3850, 30.1500],
-    'bunjee-jumping':              [78.3860, 30.1555],
-    'gaint-swing':                 [78.3870, 30.1545],
-    'flying-fox':                  [78.3865, 30.1548],
-    'ram-jhula':                   [78.3094, 30.1213],
-    'janki-setu':                  [78.3058, 30.1180],
+    'triveni-ghat':                [78.2993118, 30.1037136],
+    'shatrughan-ghat':             [78.31159269999999, 30.12294],
+    'parmarth-niketan':            [78.3116764, 30.119358899999995],
+    'namami-beach':                [78.392285, 30.136227],
+    'shivpuri-beach':              [78.3942895, 30.1363955],
+    'neem-beach':                  [78.3321201, 30.133328199999998],
+    'goa-beach':                   [78.33441719999999, 30.134453899999997],
+    'kodiyala':                    [78.5103865, 30.058225599999997],
+    'neer-waterfall-5-phases':     [78.3403431, 30.144962899999996],
+    'garunchatti-waterfall-3-phases': [78.3545981, 30.1244099],
+    'himshaili-waterfall':         [78.32126769999999, 30.116059],
+    'patna-waterfall':             [78.3543983, 30.124400100000003],
+    '84-kutiya':                   [78.3121592, 30.1127675],
+    'rani-temple':                 [78.3302513, 30.123971699999995],
+    'balkumar-temple':             [78.3596931, 30.0695305],
+    'bhutnath-temple':             [78.318098, 30.116598099999997],
+    'garun-chatti-mandir':         [78.3536206, 30.125574999999998],
+    'triyamkeshwar-mandir':        [78.33096069999999, 30.126400599999997],
+    'neelkanth-mahadev':           [78.340565, 30.081059],
+    'vashisht-caves':              [78.4320327, 30.114269799999995],
+    'tat-cave':                    [78.3213361, 30.116251199999997],
+    'moni-baba-cave':              [78.32188790000001, 30.1022204],
+    'kyarki-village':              [78.347427, 30.137144099999997],
+    'kunjapuri-mata-mandir':       [78.3142775, 30.1740394],
+    'narendra-nagar-view-point':   [78.29032389999999, 30.159974599999998],
+    'kunjapuri-':                  [78.3142775, 30.1740394],
+    'kodiyala-village':            [78.5103865, 30.058225599999997],
+    'mini-gartang-gali':           [78.52185159999999, 30.064295599999998],
+    'little-buddha':               [78.3291446, 30.123731899999996],
+    'ganga-view-':                 [78.33136789999999, 30.127532499999997],
+    'beatles-cafe':                [78.3261357, 30.127050099999995],
+    'mount-bistro':                [78.3868258, 30.134132599999997],
+    'ram-jhula':                   [78.3141266, 30.1239532],
+    'janki-setu':                  [78.3085417, 30.1165093],
+    // Zostel nodes
+    'zostel-tapovan':              [78.3232438999119, 30.129955351101362],
+    'zostel-laxman-jhula':         [78.32791337494515, 30.123124507013824],
+    // Event quest locations
+    'zostel-lj-checkin':           [78.32791337494515, 30.123124507013824],
+    'zostel-lj-vibe':              [78.32791337494515, 30.123124507013824],
+    'ganga-kinare-subah':          [78.32862668465614, 30.123785277441403],
   };
 
   // =============================================
@@ -96,6 +96,26 @@
   var currentUser = null;
   var userProfile = null;
   var authIsSignUp = true;
+  var cameraStream = null;
+  var cameraClaimCtx = null;
+  var activeSection = 'quests';
+
+  var ZOSTEL_NODES = [
+    {
+      title: 'Zostel Rishikesh (Tapovan)',
+      slug: 'zostel-tapovan',
+      lat: 30.129955351101362,
+      lng: 78.3232438999119,
+      description: 'Your home in the mountains — right in the heart of Tapovan.',
+    },
+    {
+      title: 'Zostel Rishikesh (Laxman Jhula)',
+      slug: 'zostel-laxman-jhula',
+      lat: 30.123124507013824,
+      lng: 78.32791337494515,
+      description: 'Steps away from the iconic Laxman Jhula bridge.',
+    },
+  ];
 
   // =============================================
   // Geolocation Utilities
@@ -175,11 +195,18 @@
     }
   }
 
-  async function doSignUp(email, password, username) {
+  async function doSignUp(phone, password, username) {
+    // Check username uniqueness
+    var check = await sb.from('profiles')
+      .select('id')
+      .eq('username', username)
+      .maybeSingle();
+    if (check.data) throw { message: 'Username already taken' };
+
     var result = await sb.auth.signUp({
-      email: email,
+      email: phone + '@zoquest.app',
       password: password,
-      options: { data: { username: username } },
+      options: { data: { username: username, phone: phone } },
     });
     if (result.error) throw result.error;
     currentUser = result.data.user;
@@ -187,9 +214,9 @@
     onAuthSuccess();
   }
 
-  async function doSignIn(email, password) {
+  async function doSignIn(phone, password) {
     var result = await sb.auth.signInWithPassword({
-      email: email,
+      email: phone + '@zoquest.app',
       password: password,
     });
     if (result.error) throw result.error;
@@ -204,6 +231,7 @@
     userProfile = null;
     document.getElementById('zo-balance-area').style.display = 'none';
     document.getElementById('user-menu-btn').style.display = 'none';
+    document.getElementById('profile-modal').style.display = 'none';
     showAuthModal();
   }
 
@@ -218,7 +246,7 @@
       var name = (userProfile && userProfile.username) ||
         (currentUser && currentUser.user_metadata && currentUser.user_metadata.username) ||
         'User';
-      menuBtn.textContent = name + ' (Sign Out)';
+      menuBtn.textContent = name;
     }
   }
 
@@ -251,7 +279,7 @@
     updateZoDisplay();
   }
 
-  async function claimQuestReward(reward) {
+  async function claimQuestReward(reward, slug, quests, selfieUrl) {
     if (!currentUser || !userProfile || !sb) {
       showToast('Sign in to claim quests');
       return false;
@@ -266,13 +294,234 @@
     }
     userProfile.zo_balance = newBalance;
     updateZoDisplay();
+
+    // Save claim record for cooldown tracking
+    await sb.from('quest_claims').insert({
+      user_id: currentUser.id,
+      quest_id: quests.map(function (q) { return q.id; }).join(','),
+      slug: slug,
+      reward: reward,
+      selfie_url: selfieUrl || null,
+    });
+
     return true;
+  }
+
+  // =============================================
+  // Cooldown Check
+  // =============================================
+
+  async function checkCooldown(slug, cooldownHours) {
+    if (!sb || !currentUser) return { canClaim: true };
+    try {
+      var result = await sb.from('quest_claims')
+        .select('claimed_at')
+        .eq('user_id', currentUser.id)
+        .eq('slug', slug)
+        .order('claimed_at', { ascending: false })
+        .limit(1);
+      if (!result.data || result.data.length === 0) return { canClaim: true };
+      var lastClaim = new Date(result.data[0].claimed_at);
+      var cooldownMs = cooldownHours * 60 * 60 * 1000;
+      var elapsed = Date.now() - lastClaim.getTime();
+      if (elapsed >= cooldownMs) return { canClaim: true };
+      return { canClaim: false, remaining: cooldownMs - elapsed };
+    } catch (err) {
+      console.error('Cooldown check error:', err);
+      return { canClaim: true };
+    }
+  }
+
+  async function checkAndShowClaim(slug, totalReward, quests) {
+    var section = currentPopup ? currentPopup.getElement().querySelector('#claim-section') : null;
+    if (!section) return;
+
+    if (!currentUser) {
+      section.innerHTML = '<button class="claim-btn">📸 Take Photo to Claim ($ZO ' + totalReward + ')</button>';
+      section.querySelector('.claim-btn').addEventListener('click', function () {
+        showToast('Sign in to claim quests');
+      });
+      return;
+    }
+
+    // Check max_completions (one-time events)
+    var maxComp = quests[0].max_completions || 0;
+    if (maxComp > 0 && sb && currentUser) {
+      try {
+        var countResult = await sb.from('quest_claims')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', currentUser.id)
+          .eq('slug', slug);
+        section = currentPopup ? currentPopup.getElement().querySelector('#claim-section') : null;
+        if (!section) return;
+        if (countResult.count >= maxComp) {
+          section.innerHTML = '<span class="claim-status">Already claimed!</span>';
+          section.className = 'popup-claim not-claimable';
+          return;
+        }
+      } catch (err) {
+        console.error('Max completions check error:', err);
+      }
+    }
+
+    var cooldownHours = quests[0].cooldown_hours || 24;
+    var cd = await checkCooldown(slug, cooldownHours);
+
+    // Re-check popup still exists (may have closed during async)
+    section = currentPopup ? currentPopup.getElement().querySelector('#claim-section') : null;
+    if (!section) return;
+
+    if (!cd.canClaim) {
+      var hrs = Math.floor(cd.remaining / 3600000);
+      var mins = Math.floor((cd.remaining % 3600000) / 60000);
+      section.innerHTML = '<span class="claim-status">Cooldown: ' + hrs + 'h ' + mins + 'm remaining</span>';
+      section.className = 'popup-claim not-claimable';
+    } else {
+      section.innerHTML = '<button class="claim-btn">📸 Take Photo to Claim ($ZO ' + totalReward + ')</button>';
+      section.querySelector('.claim-btn').addEventListener('click', function () {
+        startSelfieClaim(this, slug, totalReward, quests);
+      });
+    }
+  }
+
+  // =============================================
+  // Camera Capture & Upload
+  // =============================================
+
+  function startSelfieClaim(btn, slug, totalReward, quests) {
+    cameraClaimCtx = { btn: btn, slug: slug, totalReward: totalReward, quests: quests };
+    openCamera();
+  }
+
+  async function openCamera() {
+    var video = document.getElementById('camera-video');
+    var preview = document.getElementById('camera-preview');
+    var confirmBar = document.getElementById('camera-confirm-bar');
+    var shutterBar = document.getElementById('camera-shutter-bar');
+
+    // Reset state
+    preview.style.display = 'none';
+    video.style.display = 'block';
+    confirmBar.style.display = 'none';
+    shutterBar.style.display = 'flex';
+
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      video.srcObject = cameraStream;
+      document.getElementById('camera-modal').style.display = 'flex';
+    } catch (err) {
+      console.error('Camera error:', err);
+      showToast('Camera access denied or not available');
+      cameraClaimCtx = null;
+    }
+  }
+
+  function capturePhoto() {
+    var video = document.getElementById('camera-video');
+    var canvas = document.getElementById('camera-canvas');
+    var preview = document.getElementById('camera-preview');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    preview.src = canvas.toDataURL('image/jpeg', 0.85);
+    preview.style.display = 'block';
+    video.style.display = 'none';
+
+    document.getElementById('camera-shutter-bar').style.display = 'none';
+    document.getElementById('camera-confirm-bar').style.display = 'flex';
+  }
+
+  function retakePhoto() {
+    document.getElementById('camera-preview').style.display = 'none';
+    document.getElementById('camera-video').style.display = 'block';
+    document.getElementById('camera-shutter-bar').style.display = 'flex';
+    document.getElementById('camera-confirm-bar').style.display = 'none';
+  }
+
+  async function usePhoto() {
+    if (!cameraClaimCtx) return;
+
+    var canvas = document.getElementById('camera-canvas');
+    var ctx = cameraClaimCtx;
+    cameraClaimCtx = null;
+
+    var blob = await new Promise(function (resolve) {
+      canvas.toBlob(resolve, 'image/jpeg', 0.85);
+    });
+
+    closeCamera();
+
+    // Update popup claim section
+    var section = ctx.btn ? ctx.btn.closest('.popup-claim') : null;
+    if (section) {
+      section.innerHTML = '<span class="claim-status">Uploading & claiming...</span>';
+    }
+
+    var selfieUrl = await uploadSelfie(blob, ctx.slug);
+    var success = await claimQuestReward(ctx.totalReward, ctx.slug, ctx.quests, selfieUrl);
+    if (success) {
+      showToast('Claimed $ZO ' + ctx.totalReward + '!');
+      if (currentPopup) { currentPopup.remove(); currentPopup = null; }
+    } else {
+      if (section && section.parentNode) {
+        section.innerHTML = '<button class="claim-btn">📸 Take Photo to Claim ($ZO ' + ctx.totalReward + ')</button>';
+        section.querySelector('.claim-btn').addEventListener('click', function () {
+          startSelfieClaim(this, ctx.slug, ctx.totalReward, ctx.quests);
+        });
+      }
+    }
+  }
+
+  function closeCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(function (track) { track.stop(); });
+      cameraStream = null;
+    }
+    document.getElementById('camera-modal').style.display = 'none';
+  }
+
+  function initCameraUI() {
+    document.getElementById('camera-shutter-btn').addEventListener('click', capturePhoto);
+    document.getElementById('camera-retake-btn').addEventListener('click', retakePhoto);
+    document.getElementById('camera-use-btn').addEventListener('click', usePhoto);
+    document.getElementById('camera-close-btn').addEventListener('click', function () {
+      cameraClaimCtx = null;
+      closeCamera();
+    });
+  }
+
+  async function uploadSelfie(fileOrBlob, slug) {
+    if (!sb || !currentUser) return null;
+    try {
+      var ext = 'jpg';
+      if (fileOrBlob.name) {
+        ext = fileOrBlob.name.split('.').pop() || 'jpg';
+      }
+      var path = currentUser.id + '/' + slug + '_' + Date.now() + '.' + ext;
+      var result = await sb.storage.from('selfies').upload(path, fileOrBlob, {
+        contentType: 'image/jpeg',
+      });
+      if (result.error) {
+        console.error('Selfie upload error:', result.error);
+        return null;
+      }
+      var urlResult = sb.storage.from('selfies').getPublicUrl(path);
+      return urlResult.data.publicUrl;
+    } catch (err) {
+      console.error('Selfie upload failed:', err);
+      return null;
+    }
   }
 
   function updateZoDisplay() {
     var el = document.getElementById('zo-balance');
     if (el && userProfile) {
-      el.textContent = '$' + (userProfile.zo_balance || 0);
+      el.textContent = '$ZO ' + (userProfile.zo_balance || 0);
     }
   }
 
@@ -315,10 +564,119 @@
         '<li class="lb-row' + (isMe ? ' is-me' : '') + '">' +
           '<span class="lb-rank">' + (i + 1) + '</span>' +
           '<span class="lb-name">' + (e.username || 'Anonymous') + '</span>' +
-          '<span class="lb-zo">$' + (e.zo_balance || 0) + '</span>' +
+          '<span class="lb-zo">$ZO ' + (e.zo_balance || 0) + '</span>' +
         '</li>';
     }
     list.innerHTML = html;
+  }
+
+  // =============================================
+  // Profile
+  // =============================================
+
+  async function loadUserClaims() {
+    if (!sb || !currentUser) return [];
+    try {
+      var result = await sb.from('quest_claims')
+        .select('slug, reward, claimed_at')
+        .eq('user_id', currentUser.id)
+        .order('claimed_at', { ascending: false })
+        .limit(50);
+      return result.data || [];
+    } catch (err) {
+      console.error('Claims load error:', err);
+      return [];
+    }
+  }
+
+  async function loadUserRank() {
+    if (!sb || !currentUser) return null;
+    try {
+      var result = await sb.from('profiles')
+        .select('id, zo_balance')
+        .order('zo_balance', { ascending: false });
+      if (!result.data) return null;
+      for (var i = 0; i < result.data.length; i++) {
+        if (result.data[i].id === currentUser.id) return i + 1;
+      }
+      return null;
+    } catch (err) {
+      console.error('Rank load error:', err);
+      return null;
+    }
+  }
+
+  async function showProfile() {
+    var modal = document.getElementById('profile-modal');
+    var usernameEl = document.getElementById('profile-username');
+    var zoEl = document.getElementById('profile-total-zo');
+    var rankEl = document.getElementById('profile-rank');
+    var claimsList = document.getElementById('profile-claims-list');
+
+    usernameEl.textContent = (userProfile && userProfile.username) || 'Explorer';
+    zoEl.textContent = '$ZO ' + ((userProfile && userProfile.zo_balance) || 0);
+    rankEl.textContent = '#-';
+    claimsList.innerHTML = '<li class="profile-empty">Loading...</li>';
+
+    modal.style.display = 'flex';
+
+    // Load rank and claims in parallel
+    var rankPromise = loadUserRank();
+    var claimsPromise = loadUserClaims();
+
+    var rank = await rankPromise;
+    rankEl.textContent = rank ? '#' + rank : '#-';
+
+    var claims = await claimsPromise;
+    if (claims.length === 0) {
+      claimsList.innerHTML = '<li class="profile-empty">No quests claimed yet</li>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < claims.length; i++) {
+      var c = claims[i];
+      var title = c.slug;
+      for (var j = 0; j < allQuests.length; j++) {
+        if (allQuests[j].slug === c.slug) {
+          title = allQuests[j].title;
+          break;
+        }
+      }
+      var date = new Date(c.claimed_at);
+      var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      html +=
+        '<li class="profile-claim-row">' +
+          '<div class="profile-claim-info">' +
+            '<span class="profile-claim-title">' + title + '</span>' +
+            '<span class="profile-claim-date">' + dateStr + '</span>' +
+          '</div>' +
+          '<span class="profile-claim-reward">$ZO ' + c.reward + '</span>' +
+        '</li>';
+    }
+    claimsList.innerHTML = html;
+  }
+
+  function initProfileUI() {
+    document.getElementById('profile-close').addEventListener('click', function () {
+      document.getElementById('profile-modal').style.display = 'none';
+    });
+
+    document.getElementById('profile-modal').addEventListener('click', function (e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+
+    // Rank box opens leaderboard
+    document.getElementById('profile-rank-box').addEventListener('click', function () {
+      document.getElementById('profile-modal').style.display = 'none';
+      showLeaderboard();
+    });
+
+    // Logout from profile
+    document.getElementById('profile-logout-btn').addEventListener('click', function () {
+      document.getElementById('profile-modal').style.display = 'none';
+      doSignOut();
+    });
   }
 
   // =============================================
@@ -357,11 +715,17 @@
       e.preventDefault();
       var errEl = document.getElementById('auth-error');
       var submitBtn = document.getElementById('auth-submit-btn');
-      var email = document.getElementById('auth-email').value.trim();
+      var phone = document.getElementById('auth-phone').value.trim();
       var password = document.getElementById('auth-password').value;
       var username = document.getElementById('auth-username').value.trim();
 
       errEl.textContent = '';
+
+      if (!/^\d{10}$/.test(phone)) {
+        errEl.textContent = 'Enter a valid 10-digit phone number';
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.textContent = 'Please wait...';
 
@@ -370,9 +734,9 @@
           if (!username) {
             throw { message: 'Username is required' };
           }
-          await doSignUp(email, password, username);
+          await doSignUp(phone, password, username);
         } else {
-          await doSignIn(email, password);
+          await doSignIn(phone, password);
         }
       } catch (err) {
         errEl.textContent = err.message || 'Something went wrong';
@@ -388,9 +752,9 @@
       setAuthMode(!authIsSignUp);
     });
 
-    // Sign out button
+    // User menu btn opens profile
     document.getElementById('user-menu-btn').addEventListener('click', function () {
-      doSignOut();
+      showProfile();
     });
 
     // Leaderboard close
@@ -503,6 +867,8 @@
     initGeolocation();
     initFakeLocation();
     initAuthUI();
+    initCameraUI();
+    initProfileUI();
 
     // Check auth — show auth modal if Supabase is configured
     if (sb) {
@@ -621,6 +987,17 @@
         if (features.length > 0) {
           var slug = features[0].properties.slug;
           var coords = features[0].geometry.coordinates.slice();
+
+          // If on nodes tab, open node popup
+          if (activeSection === 'nodes') {
+            for (var ni = 0; ni < ZOSTEL_NODES.length; ni++) {
+              if (ZOSTEL_NODES[ni].slug === slug) {
+                openNodePopup(ZOSTEL_NODES[ni]);
+                return;
+              }
+            }
+          }
+
           var group = filteredQuests.filter(function (q) {
             return q.slug === slug;
           });
@@ -675,17 +1052,28 @@
         allQuests = [];
         for (var i = 0; i < rows.length; i++) {
           var r = rows[i];
-          if (!r.slug || !COORDS[r.slug] || !r.category) continue;
+          // Parse coordinates from Location column ("lat, lng") or fallback to COORDS
+          var coords = null;
+          if (r.Location && r.Location.indexOf(',') !== -1) {
+            var parts = r.Location.split(',');
+            var lat = parseFloat(parts[0].trim());
+            var lng = parseFloat(parts[1].trim());
+            if (!isNaN(lat) && !isNaN(lng)) coords = [lng, lat];
+          }
+          if (!coords && r.slug && COORDS[r.slug]) coords = COORDS[r.slug];
+          if (!r.slug || !coords || !r.category) continue;
           allQuests.push({
             id: r.id,
             title: r.title,
             description: r.description,
             difficulty: r.difficulty,
             reward: parseInt(r.reward, 10) || 0,
+            cooldown_hours: parseInt(r.cooldown_hours, 10) || 24,
+            max_completions: parseInt(r.max_completions, 10) || 0,
             category: r.category,
             slug: r.slug,
-            lng: COORDS[r.slug][0],
-            lat: COORDS[r.slug][1],
+            lng: coords[0],
+            lat: coords[1],
             meta: CATEGORIES[r.category] || { emoji: '📍', color: '#ff6b35' },
           });
         }
@@ -733,6 +1121,11 @@
     container.addEventListener('click', function (e) {
       var btn = e.target.closest('.cat-btn');
       if (!btn) return;
+      // Close any open popup when switching categories
+      if (currentPopup) {
+        currentPopup.remove();
+        currentPopup = null;
+      }
       var all = container.querySelectorAll('.cat-btn');
       for (var k = 0; k < all.length; k++) all[k].classList.remove('active');
       btn.classList.add('active');
@@ -771,7 +1164,7 @@
             '<span class="cat-tag" style="background:' + q.meta.color + '22;color:' + q.meta.color + '">' +
               q.meta.emoji + ' ' + q.category +
             '</span>' +
-            '<span class="quest-reward">$' + q.reward + '</span>' +
+            '<span class="quest-reward">$ZO ' + q.reward + '</span>' +
           '</div>' +
           '<h3 class="quest-card-title">' + q.title + '</h3>' +
           '<span class="quest-card-diff">' + q.difficulty + '</span>' +
@@ -814,8 +1207,7 @@
     for (var k = 0; k < slugs.length; k++) {
       var slug = slugs[k];
       var group = groups[slug];
-      var coords = COORDS[slug];
-      if (!coords) continue;
+      var coords = [group[0].lng, group[0].lat];
 
       features.push({
         type: 'Feature',
@@ -846,6 +1238,7 @@
     }
 
     var locationName = quests[0].title;
+    var slug = quests[0].slug;
     var totalReward = 0;
     var rows = '';
     for (var i = 0; i < quests.length; i++) {
@@ -854,18 +1247,20 @@
       rows +=
         '<div class="popup-quest-row">' +
           '<span class="popup-cat-label">' + q.meta.emoji + ' ' + q.category + '</span>' +
-          '<span class="popup-zo">$' + q.reward + '</span>' +
+          '<span class="popup-zo">$ZO ' + q.reward + '</span>' +
         '</div>';
     }
 
     var claimHTML = '';
     var loc = getEffectiveLocation();
+    var withinRange = false;
     if (!loc) {
       claimHTML = '<div class="popup-claim no-location"><span class="claim-status">Enable location to claim</span></div>';
     } else {
       var dist = haversineDistance(loc.lat, loc.lng, coords[1], coords[0]);
       if (dist <= 50) {
-        claimHTML = '<div class="popup-claim claimable"><button class="claim-btn" data-reward="' + totalReward + '">Claim Quest ($' + totalReward + ')</button></div>';
+        withinRange = true;
+        claimHTML = '<div class="popup-claim claimable" id="claim-section"><span class="claim-status">Checking...</span></div>';
       } else {
         var distStr = dist < 1000 ? Math.round(dist) + 'm' : (dist / 1000).toFixed(1) + 'km';
         claimHTML = '<div class="popup-claim not-claimable"><span class="claim-status">' + distStr + ' away — get within 50m</span></div>';
@@ -890,28 +1285,9 @@
       .setHTML(html)
       .addTo(map);
 
-    var claimBtn = currentPopup.getElement().querySelector('.claim-btn');
-    if (claimBtn) {
-      claimBtn.addEventListener('click', async function () {
-        var reward = parseInt(this.dataset.reward, 10) || 0;
-        if (!currentUser) {
-          showToast('Sign in to claim quests');
-          return;
-        }
-        this.disabled = true;
-        this.textContent = 'Claiming...';
-        var success = await claimQuestReward(reward);
-        if (success) {
-          showToast('Claimed $' + reward + ' ZO!');
-          if (currentPopup) {
-            currentPopup.remove();
-            currentPopup = null;
-          }
-        } else {
-          this.disabled = false;
-          this.textContent = 'Claim Quest ($' + reward + ')';
-        }
-      });
+    // If within 50m, async check cooldown then show selfie claim button
+    if (withinRange) {
+      checkAndShowClaim(slug, totalReward, quests);
     }
   }
 
@@ -938,6 +1314,151 @@
   }
 
   // =============================================
+  // Nodes (Zostel properties)
+  // =============================================
+
+  function getNodeEvents(node) {
+    return allQuests.filter(function (q) {
+      return q.category === 'Event' &&
+        Math.abs(q.lat - node.lat) < 0.002 &&
+        Math.abs(q.lng - node.lng) < 0.002;
+    });
+  }
+
+  function renderNodes() {
+    var list = document.getElementById('node-list');
+    var countEl = document.getElementById('node-count');
+    countEl.textContent = ZOSTEL_NODES.length;
+
+    var meta = CATEGORIES['Zostel'];
+    var evMeta = CATEGORIES['Event'] || { emoji: '🎉', color: '#e74c3c' };
+    var html = '';
+    for (var i = 0; i < ZOSTEL_NODES.length; i++) {
+      var n = ZOSTEL_NODES[i];
+      var events = getNodeEvents(n);
+      html +=
+        '<li class="quest-card" data-node-idx="' + i + '" style="animation-delay:' + (i * 0.04) + 's">' +
+          '<div class="quest-card-cat">' +
+            '<span class="cat-tag" style="background:' + meta.color + '22;color:' + meta.color + '">' +
+              meta.emoji + ' Zostel' +
+            '</span>' +
+          '</div>' +
+          '<h3 class="quest-card-title">' + n.title + '</h3>' +
+          '<span class="quest-card-diff">' + n.description + '</span>';
+      if (events.length > 0) {
+        html += '<div class="node-events-section">';
+        for (var e = 0; e < events.length; e++) {
+          html +=
+            '<div class="node-event-row">' +
+              '<span class="node-event-emoji">' + evMeta.emoji + '</span>' +
+              '<span class="node-event-title">' + events[e].title + '</span>' +
+              '<span class="quest-reward">$' + events[e].reward + '</span>' +
+            '</div>';
+        }
+        html += '</div>';
+      }
+      html += '</li>';
+    }
+    list.innerHTML = html;
+
+    var cards = list.querySelectorAll('.quest-card');
+    for (var j = 0; j < cards.length; j++) {
+      cards[j].addEventListener('click', function () {
+        var idx = parseInt(this.dataset.nodeIdx, 10);
+        var node = ZOSTEL_NODES[idx];
+        if (!node) return;
+        flyToNode(node);
+      });
+    }
+  }
+
+  function renderNodeMarkers() {
+    if (!mapReady) return;
+
+    var features = [];
+    for (var i = 0; i < ZOSTEL_NODES.length; i++) {
+      var n = ZOSTEL_NODES[i];
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [n.lng, n.lat] },
+        properties: {
+          slug: n.slug,
+          category: 'Zostel',
+          count: 1,
+          title: n.title,
+          isNode: true,
+        },
+      });
+    }
+
+    map.getSource('quest-markers').setData({
+      type: 'FeatureCollection',
+      features: features,
+    });
+  }
+
+  function flyToNode(node) {
+    if (currentPopup) {
+      currentPopup.remove();
+      currentPopup = null;
+    }
+
+    map.flyTo({
+      center: [node.lng, node.lat],
+      zoom: 15,
+      duration: 800,
+      essential: true,
+    });
+
+    setTimeout(function () {
+      openNodePopup(node);
+    }, 850);
+  }
+
+  function openNodePopup(node) {
+    if (currentPopup) {
+      currentPopup.remove();
+      currentPopup = null;
+    }
+
+    var meta = CATEGORIES['Zostel'];
+    var evMeta = CATEGORIES['Event'] || { emoji: '🎉', color: '#e74c3c' };
+    var events = getNodeEvents(node);
+    var html =
+      '<div class="quest-popup">' +
+        '<div class="popup-location-name">' + node.title + '</div>' +
+        '<p class="popup-desc">' + node.description + '</p>' +
+        '<div class="popup-quest-row">' +
+          '<span class="popup-cat-label">' + meta.emoji + ' Zostel Node</span>' +
+        '</div>';
+
+    if (events.length > 0) {
+      html += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">' +
+        '<div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Events here</div>';
+      for (var i = 0; i < events.length; i++) {
+        html +=
+          '<div class="popup-quest-row">' +
+            '<span class="popup-cat-label">' + evMeta.emoji + ' ' + events[i].title + '</span>' +
+            '<span class="popup-zo">$' + events[i].reward + '</span>' +
+          '</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+
+    currentPopup = new mapboxgl.Popup({
+      closeButton: true,
+      offset: 20,
+      maxWidth: '280px',
+      className: 'quest-popup-container',
+    })
+      .setLngLat([node.lng, node.lat])
+      .setHTML(html)
+      .addTo(map);
+  }
+
+  // =============================================
   // Bottom Navigation
   // =============================================
 
@@ -946,17 +1467,30 @@
     for (var i = 0; i < btns.length; i++) {
       btns[i].addEventListener('click', function () {
         var section = this.dataset.section;
-        if (section === 'events') {
-          showToast('Events — Coming Soon!');
-          return;
-        }
         if (section === 'leaderboard') {
           showLeaderboard();
           return;
         }
+
+        // Update active tab
         var all = document.querySelectorAll('.bottom-nav .nav-btn');
         for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
         this.classList.add('active');
+
+        activeSection = section;
+
+        if (section === 'quests') {
+          document.getElementById('quest-panel').style.display = 'flex';
+          document.getElementById('category-filters').style.display = 'flex';
+          document.getElementById('nodes-panel').style.display = 'none';
+          renderMarkers(filteredQuests);
+        } else if (section === 'nodes') {
+          document.getElementById('quest-panel').style.display = 'none';
+          document.getElementById('category-filters').style.display = 'none';
+          document.getElementById('nodes-panel').style.display = 'flex';
+          renderNodes();
+          renderNodeMarkers();
+        }
       });
     }
   }
