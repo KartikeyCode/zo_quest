@@ -6,103 +6,66 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="theme-color" content="#f4f1ea" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>Zo Locations Hub</title>
-    
-    <!-- External Stylesheets -->
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>Zo Quest — Rishikesh</title>
+    <link rel="icon" href="Assets/icon.png" />
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" />
     <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
-    <!-- Zo Locations Hub - Complete Working Version - Deploy Fix -->
+    <!-- Map -->
     <div id="map-container">
-        <div id="map"></div>
+      <div id="map"></div>
     </div>
 
+    <!-- Header -->
     <header class="main-header">
-        <img src="zo-white.png" alt="Zo Logo" class="zo-logo">
-        <div class="search-icon-container">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        </div>
+      <img src="zo-white.png" alt="Zo" class="zo-logo">
+      <span class="header-divider"></span>
+      <span class="header-title">Rishikesh</span>
     </header>
 
-    <div id="center-panel">
-      <div id="location-info">
-        <img src="Z_to_House.gif" alt="Zo Locations Hub" class="logo-gif">
+    <!-- Category filter pills -->
+    <div id="category-filters" class="category-filters"></div>
+
+    <!-- Quest bottom panel -->
+    <div id="quest-panel" class="quest-panel">
+      <div class="quest-panel-handle"></div>
+      <div class="quest-panel-header">
+        <span class="quest-panel-title">Quests</span>
+        <span id="quest-count" class="quest-count">0</span>
+      </div>
+      <ul id="quest-list" class="quest-list"></ul>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Loading screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-inner">
+        <img src="spinner_Z_4.gif" alt="Loading" class="spinner-gif" />
+        <p>Discovering Quests</p>
+        <small>Rishikesh</small>
       </div>
     </div>
 
-    <div id="list-container">
-        <div class="list-header">
-            <div class="search-and-view">
-            <div class="search-bar">
-                <input type="text" placeholder="Search locations" id="search-input">
-                </div>
-                <button class="view-all-btn">View All</button>
-            </div>
-            <div class="mobile-filters">
-                <button class="filter-btn active" data-filter="dates">All Areas ▼</button>
-                <button class="filter-btn" data-filter="locations">All Locations ▼</button>
-            </div>
-        </div>
-        <ul id="location-list"></ul>
-    </div>
-
-    <div class="location-filters-container">
-        <button class="location-filter-btn active" data-location="all">All Areas</button>
-        <button class="location-filter-btn" data-location="bangalore">Bangalore</button>
-        <button class="location-filter-btn" data-location="sanfrancisco">San Francisco</button>
-    </div>
-
-    <!-- Search Overlay -->
-    <div id="search-overlay" class="search-overlay">
-        <div class="search-overlay-content">
-            <input type="text" id="search-overlay-input" placeholder="Search for locations...">
-            <button class="close-search-btn">&times;</button>
-        </div>
-    </div>
-
-    <!-- Calendar overlay removed since we're showing static locations, not time-based events -->
-
-    <!-- Loading Overlay -->
-    <div id="location-loading" class="loading-overlay">
-      <div class="loading-content">
-        <img src="spinner_Z_4.gif" alt="Loading" class="loading-spinner">
-        <p>Discovering Zo Locations</p>
-        <small>Please allow location access for the best experience</small>
-        <button id="manual-location-btn" class="manual-location-button" style="display: none;">
-          📍 Try Location Again
-        </button>
-      </div>
-    </div>
-
-    <!-- External Scripts -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
-    
-    <!-- Static locations - no database needed -->
-    
-    <!-- Main Application Script -->
-    <script src="script.js"></script>
-
-    <!-- Bottom Navigation Bar -->
-    <nav id="bottom-nav" class="bottom-nav">
-      <button class="nav-btn" data-section="curators">
-        <span class="nav-icon">👥</span>
-        <span class="nav-label">Curators</span>
-      </button>
-      <button class="nav-btn active" data-section="locations">
-        <span class="nav-icon">📍</span>
-        <span class="nav-label">Locations</span>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-section="quests">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Quests</span>
       </button>
       <button class="nav-btn" data-section="events">
-        <span class="nav-icon">🌍</span>
+        <span class="nav-icon">🎉</span>
         <span class="nav-label">Events</span>
       </button>
     </nav>
+
+    <!-- Scripts -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
-/* =====================================
-   CSS Reset and Root Variables
-   ===================================== */
+/* =============================================
+   Reset & Variables
+   ============================================= */
 *,
 *::before,
 *::after {
@@ -8,40 +8,43 @@
 }
 
 :root {
-  --primary-color: #f4f1ea; /* Warm textured paper background */
-  --secondary-color: #ede8de; /* Slightly darker paper tone for contrast */
-  --accent-color: #d4a574; /* Golden yellow */
-  --text-color: #2a251d; /* Dark brown text */
-  --purple-accent: #8b5fbf; /* Purple */
-  --coral-accent: #e67e5c; /* Coral/orange */
+  --bg: #0a0a0a;
+  --bg-card: rgba(20, 20, 20, 0.85);
+  --accent: #ff6b35;
+  --accent-light: #ff8c42;
+  --accent-glow: rgba(255, 107, 53, 0.4);
+  --text: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --border: rgba(255, 255, 255, 0.08);
+  --nav-h: 64px;
 }
 
-/* =====================================
-   Base Styles
-   ===================================== */
+/* =============================================
+   Base
+   ============================================= */
 body,
 html {
   margin: 0;
   padding: 0;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
-  font-family: "Space Grotesk", sans-serif;
-  background-color: var(--primary-color);
-  color: var(--text-color);
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
   touch-action: manipulation;
 }
 
+/* =============================================
+   Map
+   ============================================= */
 #map-container {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 1;
 }
 
@@ -50,1413 +53,599 @@ html {
   height: 100%;
 }
 
-/* Hide any mapbox controls that might interfere with bottom nav */
-.mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right {
-  display: none !important;
-}
-
-/* =====================================
-   Header Styles
-   ===================================== */
-.main-header {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 2;
-  background-color: transparent;
-}
-
-.zo-logo {
-  height: 30px;
-  width: auto;
-}
-
-.search-icon-container {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.search-icon-container:hover {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.logo-area {
-  display: flex;
-  align-items: center;
-}
-
-.logo-text h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-
-.logo-text p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-
-
-/* =====================================
-   Center Panel
-   ===================================== */
-#center-panel {
-    position: absolute;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    text-align: center;
-    max-width: 500px;
-}
-
-#location-info {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: white;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.tagline-header {
-    margin: 0;
-}
-
-.logo-gif {
-    height: 60px;
-    width: auto;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
-    transition: all 0.3s ease;
-}
-
-.logo-gif:hover {
-    transform: scale(1.05);
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
-}
-
-.tagline {
-    font-size: 1rem;
-    opacity: 0.9;
-    color: white;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-
-/* =====================================
-   List Container
-   ===================================== */
-
-#list-container {
-    position: absolute;
-    top: 40px;
-    right: 20px;
-    bottom: 0px; /* Extend to bottom - flush with nav */
-    width: 350px;
-    max-height: calc(100vh - 100px); /* Account for top position */
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    overflow-y: hidden; /* Let the inner location list handle scrolling */
-    padding-bottom: 0px; /* No padding on container */
-}
-
-.list-header {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
-}
-
-.location-filters {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
-}
-
-.search-and-view {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.search-bar {
-    flex-grow: 1;
-}
-
-.mobile-filters {
-    display: none; /* Hidden by default on desktop */
-}
-
-.search-bar input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--secondary-color);
-    border-radius: 8px;
-    background-color: var(--primary-color);
-}
-
-.location-filter-btn {
-    padding: 8px 12px;
-    border: 1px solid var(--secondary-color);
-    border-radius: 6px;
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.location-filter-btn:hover {
-    background-color: var(--secondary-color);
-    border-color: var(--accent-color);
-}
-
-.location-filter-btn.active {
-    background-color: var(--accent-color);
-    color: var(--primary-color);
-    border-color: var(--accent-color);
-}
-
-.view-all-btn, .date-filter select {
-    padding: 10px 15px;
-    border: 1px solid var(--secondary-color);
-    border-radius: 8px;
-    background-color: var(--primary-color);
-    cursor: pointer;
-}
-
-#location-list {
-  list-style: none;
-  padding: 0 0 70px 0; /* Add bottom padding for nav bar */
-  margin: 0;
-  max-height: calc(100vh - 200px); /* Account for header and bottom nav */
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-  flex: 1; /* Take remaining space */
-}
-
-#location-list::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, and Opera */
-}
-
-.location-item {
-  background-color: var(--secondary-color);
-  border: 1px solid var(--secondary-color);
-  border-radius: 12px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.location-item:hover {
-  background-color: var(--primary-color);
-  border-color: var(--purple-accent);
-}
-
-.location-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.location-details {
-  flex-grow: 1;
-}
-
-.location-item h3 {
-  color: var(--text-color);
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.location-item p {
-  margin: 4px 0;
-  font-size: 0.85rem;
-  color: var(--text-color);
-  opacity: 0.8;
-}
-
-.location-item .price {
-  font-weight: 600;
-  color: var(--purple-accent);
-  margin-top: 8px;
-}
-
-.register-btn {
-  background-color: var(--accent-color);
-  color: var(--primary-color);
-  padding: 8px 16px;
-  border-radius: 8px;
-  text-align: center;
-  display: inline-block;
-  text-decoration: none;
-  font-weight: 500;
-  flex-shrink: 0;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-  border: 1px solid var(--accent-color);
-}
-
-.register-btn:hover {
-  background-color: var(--purple-accent);
-  border-color: var(--purple-accent);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
-}
-
-
-/* =====================================
-   Loading Overlay
-   ===================================== */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.loading-content {
-  text-align: center;
-  color: white;
-}
-
-.loading-spinner {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
-  display: block;
-}
-
-.loading-content p {
-  margin: 10px 0;
-  font-size: 1.3em;
-  font-weight: 600;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-
-.loading-content small {
-  opacity: 0.8;
-  font-size: 0.9em;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.loading-overlay.hidden {
-  display: none;
-}
-
-.manual-location-button {
-  margin-top: 20px;
-  padding: 12px 24px;
-  background-color: var(--coral-accent);
-  color: var(--primary-color);
-  border: 2px solid var(--coral-accent);
-  border-radius: 8px;
-  font-size: 1em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: inherit;
-}
-
-.manual-location-button:hover {
-  background-color: var(--purple-accent);
-  border-color: var(--purple-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230, 126, 92, 0.3);
-}
-
-/* =====================================
-   Mapbox Customization
-   ===================================== */
-.mapboxgl-popup-content {
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-  border-radius: 8px;
-  padding: 15px;
-  font-family: inherit;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.mapboxgl-popup-close-button {
-  color: var(--text-color);
-}
-
-.popup-register-link {
-  color: var(--purple-accent);
-  text-decoration: underline;
-  margin-left: 10px;
-}
-
-/* =====================================
-   Glass Popup Styles
-   ===================================== */
-
-.glass-popup-container .mapboxgl-popup-content {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  color: #2a251d;
-  max-width: 280px;
-  min-width: 200px;
-}
-
-.glass-popup-container .mapboxgl-popup-tip {
-  border-top-color: rgba(255, 255, 255, 0.85) !important;
-}
-
-.glass-popup h3 {
-  margin: 0 0 6px 0;
-  color: var(--text-color);
-  font-size: 0.95rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.glass-popup p {
-  margin: 3px 0;
-  color: var(--text-color);
-  font-size: 0.8rem;
-  opacity: 0.8;
-  line-height: 1.2;
-}
-
-.popup-register-btn {
-  display: inline-block;
-  background: var(--accent-color);
-  color: var(--primary-color);
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.75rem;
-  margin-top: 8px;
-  transition: all 0.3s ease;
-  border: 1px solid var(--accent-color);
-}
-
-.popup-register-btn:hover {
-  background: var(--purple-accent);
-  border-color: var(--purple-accent);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
-}
-
-.mapboxgl-popup-close-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.1);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  font-size: 16px;
-  line-height: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.mapboxgl-popup-close-button:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-/* =====================================
-   Responsive Design
-   ===================================== */
-
-@media (max-width: 768px) {
-  /* CSS custom properties for viewport calculations */
-  :root {
-    --vh: 1vh;
-    --mobile-vh: 100vh;
-    --available-height: 100vh;
-    --real-vh: 100vh;
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  /* Ensure full app fits in available viewport, accounting for browser UI */
-  body, html {
-    height: 100vh;
-    height: calc(var(--available-height, 100vh)); /* Use custom property */
-    height: 100dvh; /* Dynamic viewport height - excludes browser UI */
-    height: -webkit-fill-available; /* Fallback for older WebKit browsers */
-    overflow: hidden;
-    position: relative;
-  }
-
-  /* Additional mobile browser fixes */
-  @supports (-webkit-touch-callout: none) {
-    /* iOS Safari specific fixes */
-    body, html {
-      height: -webkit-fill-available;
-    }
-    
-    #map-container {
-      height: -webkit-fill-available;
-      height: calc(-webkit-fill-available * 0.70); /* Reduced to 70% to give more space to locations */
-    }
-  }
-
-  /* Prevent scrolling and bounce on mobile */
-  body {
-    position: fixed;
-    width: 100%;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Map container height will be set specifically in the mobile section below */
-
-  #map {
-    height: 100%;
-    width: 100%;
-  }
-
-  /* Header adjustments */
-  .main-header {
-    left: 20px;
-    right: 20px;
-    width: auto;
-    transform: none;
-    top: 20px;
-    justify-content: center; /* Center the logo */
-  }
-
-  .search-icon-container {
-    display: none !important;
-  }
-
-  /* Center panel adjustments */
-  #center-panel {
-    left: 20px;
-    right: 20px;
-    width: auto;
-    transform: none;
-    top: 80px;
-    max-width: none;
-    padding: 0 10px;
-  }
-
-  .location-name {
-    font-size: 1.8rem;
-    line-height: 1.2;
-    text-align: center;
-  }
-  
-  .logo-gif {
-    height: 50px;
-    width: auto;
-  }
-  
-  /* Locations list positioned flush with bottom nav bar */
-  #list-container {
-    position: fixed !important;
-    top: auto !important; /* Don't rely on top positioning */
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0px !important; /* Extend to bottom - flush with nav */
-    width: 100% !important;
-    height: auto !important; /* Let content determine height */
-    transform: none !important;
-    background: transparent; /* Make container transparent */
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    padding: 0; /* No padding on container */
-    border-radius: 0;
-    box-shadow: none; /* Remove shadow from container */
-    display: flex !important;
-    z-index: 100;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* New styles for the floating filter container */
-.location-filters-container {
-  position: absolute;
-  top: 160px; /* Lowered to be below the center logo/text */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  background: rgba(40, 40, 40, 0.7);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  padding: 6px;
-  border-radius: 25px; /* Fully rounded to contain the buttons */
-  display: flex;
-  gap: 6px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.location-filters-container .location-filter-btn {
-  background: transparent;
-  color: rgba(255, 255, 255, 0.8);
-  border: none;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  border-radius: 20px; /* Pill shape */
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.location-filters-container .location-filter-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.location-filters-container .location-filter-btn.active {
-  background: white;
-  color: black;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-
-/* Adjust map to accommodate fixed locations container and bottom nav with proper spacing */
-#map-container {
-  height: 100vh !important;
-  height: 100dvh !important;
-  height: var(--available-height, 100vh) !important;
-  position: relative;
-}
-
+/* Bottom gradient fade into the dark UI */
 #map-container::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 250px;
-  background: linear-gradient(to top, rgba(10, 10, 10, 0.9) 30%, transparent);
+  height: 260px;
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 10, 0.95) 8%,
+    rgba(10, 10, 10, 0.6) 45%,
+    transparent
+  );
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
-/* Bottom nav mobile adjustments */
-.bottom-nav {
-  padding: 8px 20px calc(12px + env(safe-area-inset-bottom, 0px));
-  min-height: 60px; /* Ensure consistent height */
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right {
+  display: none !important;
 }
 
-  .bottom-nav .nav-btn {
-    min-width: 60px;
-    padding: 6px 12px;
-    margin: 0 4px;
-  }
-
-  .bottom-nav .nav-icon {
-    font-size: 1.2rem;
-    margin-bottom: 1px;
-  }
-
-  .bottom-nav .nav-label {
-    font-size: 0.65rem;
-  }
-
-  /* Compact header */
-  .list-header {
-    padding: 8px 15px 6px 15px;
-    margin-bottom: 0;
-    gap: 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    flex-shrink: 0;
-    display: flex !important;
-    flex-direction: column;
-    min-height: auto;
-  }
-
-  .location-filters {
-    display: none !important; /* Hide original filters on mobile */
-  }
-
-  .search-and-view {
-    display: none !important; /* Hide search bar in the list view on mobile */
-  }
-  
-  .search-bar {
-    display: flex !important;
-    flex: 1;
-  }
-
-  .search-bar input {
-    width: 100%;
-    padding: 6px 10px;
-    font-size: 13px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    min-height: 28px;
-    font-weight: 400;
-  }
-
-  .search-bar input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-    font-weight: 400;
-  }
-
-  .search-bar input:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.15);
-  }
-  
-  .mobile-filters {
-    display: none !important;
-  }
-
-  .location-filters {
-    display: flex !important;
-    gap: 6px;
-    margin-left: 8px;
-  }
-
-  .location-filter-btn {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 4px 8px;
-    font-size: 0.65rem;
-    border-radius: 10px;
-    min-height: 24px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .location-filter-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-  }
-
-  .location-filter-btn.active {
-    background: var(--accent-color);
-    color: var(--primary-color);
-    border-color: var(--accent-color);
-  }
-
-  .view-all-btn {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 12px;
-    font-size: 0.75rem;
-    border-radius: 14px;
-    min-height: 28px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: block !important;
-  }
-
-  .view-all-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-  }
-
-  /* Horizontal scrolling location list */
-  #location-list {
-    display: flex !important;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    margin: 0;
-    padding: 20px 20px calc(70px + 20px) 20px; /* Padding to clear nav bar */
-    list-style: none;
-    gap: 15px; /* Adjust gap for aesthetics */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-    flex: 1;
-    align-items: center; /* Vertically center cards in the track */
-  }
-
-  #location-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Simplified horizontal location cards */
-  .location-item {
-    background: rgba(35, 35, 35, 0.7);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 15px; /* Increased padding */
-    display: flex !important;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-width: 170px; /* Fine-tuned width */
-    max-width: 170px;
-    height: 130px; /* Fine-tuned height */
-    flex-shrink: 0;
-    margin-bottom: 0;
-    position: relative;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-
-  .location-item:hover {
-    background: rgba(45, 45, 45, 0.8);
-    transform: translateY(-3px);
-  }
-
-  /* Remove thumbnail and price badge on mobile */
-  .location-item::before,
-  .location-item::after {
-    display: none !important;
-  }
-
-  .location-details {
-    display: flex !important;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    flex: 1;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .location-details h3 {
-    font-size: 1rem; /* Increased font size */
-    margin-bottom: 4px;
-    color: white;
-    font-weight: 600;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: 3.9em;
-    width: 100%;
-    padding: 0 4px;
-  }
-
-  .location-details p {
-    display: block; /* Show details */
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
-  }
-  .location-details p.location-date,
-  .location-details p.location-address {
-    display: block; /* Show date and location */
-  }
-
-  .register-btn {
-    position: static;
-    transform: none;
-    margin-top: 8px;
-    background: var(--accent-color);
-    color: var(--primary-color);
-    border: 1px solid var(--accent-color);
-    padding: 8px 14px; /* Adjusted padding */
-    font-size: 0.8rem; /* Adjusted font size */
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: all 0.3s ease;
-  }
-
-  .register-btn:hover {
-    background: var(--purple-accent);
-    border-color: var(--purple-accent);
-    transform: translateY(-1px);
-  }
-}
-/* =====================================
-   Search Overlay Styles
-   ===================================== */
-.search-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 9998; /* High z-index */
-  display: none; /* Hidden by default */
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 10vh;
-}
-
-.search-overlay.visible {
-  display: flex;
-}
-
-.search-overlay-content {
-  position: relative;
-  width: 80%;
-  max-width: 500px;
-}
-
-#search-overlay-input {
-  width: 100%;
-  padding: 15px 20px;
-  font-size: 1.2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  border-radius: 12px;
-  outline: none;
-}
-
-#search-overlay-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.close-search-btn {
+/* =============================================
+   Header
+   ============================================= */
+.main-header {
   position: absolute;
-  top: -15px;
-  right: -15px;
-  background: white;
-  color: black;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  font-size: 20px;
-  cursor: pointer;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: center;
-  line-height: 1;
+  gap: 10px;
 }
 
-/* =====================================
-   Calendar Overlay Styles
-   ===================================== */
-.calendar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.zo-logo {
+  height: 26px;
+  width: auto;
+  opacity: 0.9;
 }
 
-.calendar-content {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 32px;
-  max-width: 900px;
-  max-height: 90vh;
-  width: 90%;
-  overflow-y: auto;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-}
-
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  padding-bottom: 20px;
-}
-
-.calendar-header h2 {
-  margin: 0;
-  color: var(--text-color);
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.close-calendar-btn {
+.header-divider {
+  width: 1px;
+  height: 16px;
   background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-color);
-  padding: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
 }
 
-.close-calendar-btn:hover {
-  background: rgba(255, 255, 255, 0.4);
-  transform: scale(1.05);
-}
-
-.calendar-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.nav-btn {
-  background: rgba(212, 165, 116, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 165, 116, 0.4);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  color: var(--text-color);
-  transition: all 0.3s ease;
+.header-title {
+  font-size: 0.82rem;
   font-weight: 500;
-}
-
-.nav-btn:hover {
-  background: rgba(212, 165, 116, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
-}
-
-.current-month {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-color);
-}
-
-.calendar-grid {
-  margin-bottom: 20px;
-}
-
-.calendar-days-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  margin-bottom: 8px;
-}
-
-.day-header {
-  text-align: center;
-  font-weight: 600;
-  padding: 16px 8px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--text-color);
-  font-size: 0.9rem;
+  color: var(--text-dim);
   letter-spacing: 0.5px;
 }
 
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  background: transparent;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.calendar-day {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 8px 6px;
-  min-height: 110px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  border-radius: 8px;
+/* =============================================
+   Category Filter Pills
+   ============================================= */
+.category-filters {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 195px);
+  left: 0;
+  right: 0;
+  z-index: 10;
   display: flex;
-  flex-direction: column;
+  gap: 6px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.calendar-day:hover {
-  background: rgba(255, 255, 255, 0.7);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.category-filters::-webkit-scrollbar {
+  display: none;
 }
 
-.calendar-day.other-month {
-  background: rgba(255, 255, 255, 0.2);
-  color: rgba(42, 37, 29, 0.4);
-}
-
-.calendar-day.has-locations {
-  border: 2px solid rgba(212, 165, 116, 0.6);
-  background: rgba(212, 165, 116, 0.1);
-}
-
-.day-number {
-  font-weight: 600;
-  margin-bottom: 6px;
-  font-size: 1rem;
-}
-
-.day-locations-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-
-.calendar-location-preview {
-  font-size: 0.7rem;
-  background: rgba(212, 165, 116, 0.8);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  line-height: 1.2;
+.cat-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(10, 10, 10, 0.75);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.76rem;
   font-weight: 500;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  margin-bottom: 1px;
-  text-decoration: none;
-  display: block;
-  transition: all 0.3s ease;
-}
-
-.calendar-location-preview.clickable:hover {
-  background: rgba(212, 165, 116, 1);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(212, 165, 116, 0.4);
   cursor: pointer;
+  transition: background 0.25s, color 0.25s, border-color 0.25s, transform 0.2s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.more-locations {
-  font-size: 0.65rem;
-  color: var(--coral-accent);
+.cat-btn:active {
+  transform: scale(0.96);
+}
+
+.cat-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* =============================================
+   Quest Panel (bottom sheet)
+   ============================================= */
+.quest-panel {
+  position: fixed;
+  bottom: var(--nav-h);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.quest-panel-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--text-muted);
+  border-radius: 2px;
+  margin: 0 auto 8px;
+}
+
+.quest-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px 8px;
+}
+
+.quest-panel-title {
+  font-size: 1rem;
   font-weight: 600;
-  text-align: center;
-  margin-top: 2px;
-  opacity: 0.8;
+  color: var(--text);
 }
 
-@media (max-width: 768px) {
-  /* Calendar overlay mobile optimizations */
-  .calendar-overlay {
-    padding: 0;
-    align-items: stretch;
-  }
-  
-  .calendar-content {
-    width: 100%;
-    height: 100vh;
-    max-height: 100vh;
-    padding: 20px 16px;
-    border-radius: 0;
-    margin: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .calendar-header {
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    position: sticky;
-    top: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 10;
-  }
-  
-  .calendar-header h2 {
-    font-size: 1rem;
-  }
-  
-  .close-calendar-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 1.3rem;
-    min-height: 44px; /* Touch target */
-  }
-  
-  .calendar-nav {
-    margin-bottom: 16px;
-    position: sticky;
-    top: 60px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 8px 0;
-    z-index: 9;
-  }
-  
-  .nav-btn {
-    padding: 10px 16px;
-    font-size: 1rem;
-    min-width: 44px;
-    min-height: 44px;
-    border-radius: 12px;
-  }
-  
-  .current-month {
-    font-size: 1.1rem;
-  }
-  
-  .day-header {
-    padding: 8px 2px;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-  
-  .calendar-days {
-    gap: 1px;
-  }
-  
-  .calendar-day {
-    min-height: 75px;
-    padding: 4px 2px;
-    border-radius: 6px;
-  }
-  
-  .day-number {
-    font-size: 0.9rem;
-    margin-bottom: 3px;
-  }
-  
-  .calendar-location-preview {
-    font-size: 0.55rem;
-    padding: 1px 3px;
-    border-radius: 3px;
-    line-height: 1.1;
-  }
-  
-  .more-locations {
-    font-size: 0.55rem;
-    margin-top: 1px;
-  }
-  
-  .nav-btn {
-    padding: 8px 12px;
-    font-size: 0.8rem;
-    min-width: 36px;
-    min-height: 36px;
-    border-radius: 8px;
-  }
+.quest-count {
+  font-size: 0.72rem;
+  color: var(--accent);
+  background: rgba(255, 107, 53, 0.12);
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 600;
 }
 
-/* Extra small screens (phones in portrait) */
-@media (max-width: 480px) {
-  .location-name {
-    font-size: 1.5rem;
-  }
-  
-  #list-container {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    padding: 12px;
-    border-radius: 12px;
-    max-height: 35vh;
-  }
-  
-  .search-bar input {
-    padding: 10px 12px;
-    font-size: 16px;
-  }
-  
-  .view-all-btn {
-    padding: 10px 16px;
-    font-size: 0.85rem;
-  }
-  
-  /* Calendar extra small adjustments */
-  .calendar-content {
-    padding: 16px 12px;
-  }
-  
-  .calendar-header h2 {
-    font-size: 0.9rem;
-  }
-  
-  .close-calendar-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-  }
-  
-  .nav-btn {
-    padding: 6px 10px;
-    font-size: 0.7rem;
-    min-width: 32px;
-    min-height: 32px;
-  }
-  
-  .current-month {
-    font-size: 0.8rem;
-  }
-  
-  .day-header {
-    padding: 6px 1px;
-    font-size: 0.7rem;
-  }
-  
-  .calendar-day {
-    min-height: 65px;
-    padding: 3px 1px;
-  }
-  
-  .day-number {
-    font-size: 0.8rem;
-    margin-bottom: 2px;
-  }
-  
-  .calendar-location-preview {
-    font-size: 0.5rem;
-    padding: 1px 2px;
-    margin-bottom: 0.5px;
-  }
-  
-  .more-locations {
-    font-size: 0.5rem;
-  }
-  
-  .calendar-location-item {
-    padding: 12px;
-    margin-bottom: 8px;
-  }
-  
-  .calendar-location-item h4 {
-    font-size: 0.95rem;
-  }
-  
-  .calendar-location-item p {
-    font-size: 0.85rem;
-  }
+/* =============================================
+   Quest List (horizontal scroll on mobile)
+   ============================================= */
+.quest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 12px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* =====================================
-   Bottom Navigation Styles
-   ===================================== */
+.quest-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* =============================================
+   Quest Card
+   ============================================= */
+.quest-card {
+  flex-shrink: 0;
+  width: 160px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  /* Entrance animation */
+  opacity: 0;
+  transform: translateY(14px);
+  animation: fadeSlideIn 0.4s ease forwards;
+
+  /* Interaction */
+  transition: transform 0.25s, border-color 0.25s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.quest-card:active {
+  transform: scale(0.97);
+}
+
+.quest-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.quest-card-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cat-tag {
+  font-size: 0.62rem;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.quest-reward {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.quest-card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.quest-card-diff {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+/* =============================================
+   Map Markers
+   ============================================= */
+.quest-marker {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  position: relative;
+  line-height: 1;
+  /* No transition here — it conflicts with Mapbox marker repositioning during pan/zoom */
+}
+
+.quest-marker:hover {
+  z-index: 10 !important;
+}
+
+.marker-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--bg);
+  line-height: 1;
+}
+
+/* =============================================
+   Map Popup (dark/orange theme)
+   ============================================= */
+.quest-popup-container .mapboxgl-popup-content {
+  background: #1a1a1a !important;
+  color: #fff !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6) !important;
+  max-width: 280px !important;
+  min-width: 180px !important;
+
+  /* Entrance */
+  animation: popupIn 0.25s ease;
+}
+
+.quest-popup-container .mapboxgl-popup-tip {
+  border-top-color: #1a1a1a !important;
+  border-bottom-color: #1a1a1a !important;
+}
+
+.quest-popup-container .mapboxgl-popup-close-button {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 20px !important;
+  right: 8px !important;
+  top: 8px !important;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  transition: color 0.2s;
+}
+
+.quest-popup-container .mapboxgl-popup-close-button:hover {
+  color: var(--accent) !important;
+}
+
+.popup-location-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #fff;
+  padding-right: 20px;
+}
+
+.popup-desc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+  margin: 0 0 10px;
+}
+
+.popup-quest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.popup-quest-row:first-child {
+  border-top: none;
+}
+
+.popup-cat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.popup-zo {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* =============================================
+   Bottom Nav
+   ============================================= */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 200;
+  height: var(--nav-h);
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(10, 10, 10, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 20px calc(8px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-  height: 70px; /* Give nav bar a fixed height */
+  gap: 40px;
+  background: rgba(10, 10, 10, 0.88);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .bottom-nav .nav-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: transparent;
+  gap: 2px;
+  background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 8px 16px;
+  padding: 8px 24px;
   border-radius: 12px;
-  transition: all 0.3s ease;
-  min-width: 70px;
-  margin: 0 8px;
+  transition: color 0.25s;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
   position: relative;
 }
 
-.bottom-nav .nav-btn:hover {
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
 .bottom-nav .nav-btn.active {
-  color: var(--accent-color);
-  background: rgba(212, 165, 116, 0.15);
+  color: var(--accent);
 }
 
-.bottom-nav .nav-btn.active::before {
+.bottom-nav .nav-btn.active::after {
   content: '';
   position: absolute;
-  top: -1px;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 30px;
-  height: 3px;
-  background: var(--accent-color);
-  border-radius: 2px;
+  width: 24px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
 }
 
-.bottom-nav .nav-icon {
-  font-size: 1.4rem;
-  margin-bottom: 2px;
-  display: block;
+.nav-icon {
+  font-size: 1.3rem;
 }
 
-.bottom-nav .nav-label {
-  font-size: 0.7rem;
+.nav-label {
+  font-size: 0.68rem;
   font-weight: 500;
-  font-family: "Space Grotesk", sans-serif;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+}
+
+/* =============================================
+   Loading Screen
+   ============================================= */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+
+.loading-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-inner {
+  text-align: center;
+}
+
+.spinner-gif {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  display: block;
+  animation: spinGif 0.6s linear infinite;
+}
+
+.loading-inner p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.loading-inner small {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* =============================================
+   Toast
+   ============================================= */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  z-index: 9000;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 18px 32px;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  border: 1px solid var(--accent);
+  box-shadow: 0 8px 30px rgba(255, 107, 53, 0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+/* =============================================
+   Animations (GPU-accelerated: transform + opacity only)
+   ============================================= */
+@keyframes spinGif {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* =============================================
+   Desktop (≥769px)
+   ============================================= */
+@media (min-width: 769px) {
+  /* Move gradient to the right side for the sidebar */
+  #map-container::after {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background: linear-gradient(
+      to left,
+      rgba(10, 10, 10, 0.92) 10%,
+      transparent
+    );
+  }
+
+  /* Sidebar quest panel */
+  .quest-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    left: auto;
+    width: 340px;
+    background: rgba(10, 10, 10, 0.92);
+    border-left: 1px solid var(--border);
+    padding-top: 60px;
+  }
+
+  .quest-panel-handle {
+    display: none;
+  }
+
+  .quest-list {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 80px;
+    flex: 1;
+  }
+
+  .quest-card {
+    width: 100%;
+    min-width: unset;
+  }
+
+  /* Category filters float on the map */
+  .category-filters {
+    position: absolute;
+    top: 70px;
+    bottom: auto;
+    left: 16px;
+    right: auto;
+  }
+
+  /* Bottom nav spans only below sidebar */
+  .bottom-nav {
+    right: 340px;
+  }
+}
+
+/* =============================================
+   Small phones
+   ============================================= */
+@media (max-width: 380px) {
+  .quest-card {
+    width: 140px;
+    padding: 12px;
+  }
+
+  .quest-card-title {
+    font-size: 0.82rem;
+  }
+
+  .cat-btn {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
 }

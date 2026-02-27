@@ -1,638 +1,602 @@
-function initializeApp() {
-  // =====================================
-  // Configuration and Setup
-  // =====================================
-  
-  function isMobile() {
-    return window.innerWidth <= 768;
+(function () {
+  'use strict';
+
+  // =============================================
+  // Configuration
+  // =============================================
+
+  mapboxgl.accessToken =
+    'pk.eyJ1Ijoia3VzaGFsem8iLCJhIjoiY20wcDZtNjUwMDFxNzJpcjYxZjlsN2g3NiJ9.d194ACznKNqKJNfzKyanNQ';
+
+  var RISHIKESH_CENTER = [78.32, 30.12];
+  var MAP_BOUNDS = [
+    [78.05, 29.90],
+    [78.60, 30.35],
+  ];
+
+  var CATEGORIES = {
+    'Ganga Arti':        { emoji: '🪔', color: '#ff6b35' },
+    'Beaches':           { emoji: '🏖️', color: '#4ecdc4' },
+    'Waterfalls':        { emoji: '💧', color: '#45b7d1' },
+    'Ashram':            { emoji: '🙏', color: '#f0c040' },
+    'Temple':            { emoji: '🛕', color: '#e74c3c' },
+    'Cave':              { emoji: '🦇', color: '#9b59b6' },
+    'Sunset View Point': { emoji: '🌅', color: '#f39c12' },
+    'Day Tour':          { emoji: '🚶', color: '#2ecc71' },
+    'Cafes':             { emoji: '☕', color: '#e67e5c' },
+    'Adventure':         { emoji: '🪂', color: '#ff4757' },
+    'Street Food':       { emoji: '🍜', color: '#ffa502' },
+    'Market':            { emoji: '🛍️', color: '#ff6348' },
+  };
+
+  // Approximate [lng, lat] for each quest slug in Rishikesh
+  var COORDS = {
+    'triveni-ghat':                [78.2935, 30.1040],
+    'shatrughan-ghat':             [78.2948, 30.1025],
+    'parmarth-niketan':            [78.3070, 30.1215],
+    'namami-beach':                [78.3010, 30.1150],
+    'shivpuri-beach':              [78.3840, 30.1480],
+    'neem-beach':                  [78.3030, 30.1170],
+    'goa-beach':                   [78.3160, 30.1260],
+    'kodiyala':                    [78.3960, 30.1670],
+    'neer-waterfall-5-phases':     [78.3150, 30.1190],
+    'garunchatti-waterfall-3-phases': [78.2820, 30.1005],
+    'himshaili-waterfall':         [78.2750, 30.1080],
+    'secret-waterfall':            [78.2770, 30.1045],
+    'patna-waterfall':             [78.2640, 30.0940],
+    'bahubali-waterfall':          [78.2680, 30.0970],
+    '84-kutiya':                   [78.3060, 30.1243],
+    'rani-temple':                 [78.2920, 30.1100],
+    'balkumar-temple':             [78.2900, 30.1050],
+    'bhutnath-temple':             [78.2890, 30.1030],
+    'garun-chatti-mandir':         [78.2810, 30.1010],
+    'triyamkeshwar-mandir':        [78.2870, 30.1060],
+    'neelkanth-mahadev':           [78.3578, 30.1440],
+    'vashisht-caves':              [78.3100, 30.1200],
+    'jhil-mil-cave':               [78.3200, 30.1250],
+    'tat-cave':                    [78.3150, 30.1300],
+    'moni-baba-cave':              [78.3180, 30.1280],
+    'kyarki-village':              [78.2800, 30.1400],
+    'kunjapuri-mata-mandir':       [78.3296, 30.1479],
+    'narendra-nagar-view-point':   [78.2920, 30.1640],
+    'kunjapuri-':                  [78.3300, 30.1485],
+    'kodiyala-village':            [78.3965, 30.1675],
+    'mini-gartang-gali':           [78.3300, 30.1350],
+    'amma-ki-rasoi':               [78.2945, 30.1105],
+    'little-buddha':               [78.3075, 30.1218],
+    'ganga-view-':                 [78.2955, 30.1135],
+    'beatles-cafe':                [78.3125, 30.1255],
+    'mount-bistro':                [78.2985, 30.1165],
+    'rafting':                     [78.3850, 30.1500],
+    'bunjee-jumping':              [78.3860, 30.1555],
+    'gaint-swing':                 [78.3870, 30.1545],
+    'flying-fox':                  [78.3865, 30.1548],
+    'ram-jhula':                   [78.3094, 30.1213],
+    'janki-setu':                  [78.3058, 30.1180],
+  };
+
+  // =============================================
+  // State
+  // =============================================
+
+  var map = null;
+  var allQuests = [];
+  var filteredQuests = [];
+  var currentPopup = null;
+  var activeCategory = 'all';
+  var mapReady = false;
+  var pendingRender = null;
+
+  // =============================================
+  // Marker Image Generator (canvas → addImage for GPU rendering)
+  // =============================================
+
+  function createMarkerImage(emoji, color) {
+    var size = 64; // 2x for retina — displayed at 32px with pixelRatio: 2
+    var canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext('2d');
+
+    // Circle background
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // White border
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Emoji
+    ctx.font = '26px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, size / 2, size / 2 + 1);
+
+    return ctx.getImageData(0, 0, size, size);
   }
 
-  // =====================================
-  // Mobile Viewport Height Fix
-  // =====================================
-  
-  function setMobileViewportHeight() {
-    if (isMobile()) {
-      // Calculate actual viewport height accounting for browser UI
-      const vh = window.innerHeight * 0.01;
-      const actualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      
-      // Be more conservative - subtract extra space for mobile browser UI
-      const safeHeight = actualHeight - 60; // Subtract 60px for mobile browser navigation
-      
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-      document.documentElement.style.setProperty('--mobile-vh', `${window.innerHeight}px`);
-      document.documentElement.style.setProperty('--available-height', `${safeHeight}px`);
-      document.documentElement.style.setProperty('--real-vh', `${safeHeight}px`);
-    }
-  }
+  // =============================================
+  // CSV Parser (handles quoted fields & escaped quotes)
+  // =============================================
 
-  // Set initial viewport height
-  setMobileViewportHeight();
-
-  // Update on resize and orientation change
-  window.addEventListener('resize', setMobileViewportHeight);
-  window.addEventListener('orientationchange', () => {
-    setTimeout(setMobileViewportHeight, 100); // Small delay for orientation change
-  });
-  
-  // Listen for visual viewport changes (mobile browser address bar)
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setMobileViewportHeight);
-  }
-
-  mapboxgl.accessToken = "pk.eyJ1Ijoia3VzaGFsem8iLCJhIjoiY20wcDZtNjUwMDFxNzJpcjYxZjlsN2g3NiJ9.d194ACznKNqKJNfzKyanNQ";
-
-  const initialZoom = isMobile() ? 12.5 : 18.5;
-  const defaultCenter = [77.6413, 12.9141]; // Bangalore, Karnataka
-  let mapCenter = defaultCenter;
-  let userLocationCoords = null;
-  let map = null; // Global map variable
-  let currentOpenPopup = null; // Track currently open popup
-
-  // =====================================
-  // Bottom Navigation Setup
-  // =====================================
-  
-  function initializeBottomNav() {
-    const navButtons = document.querySelectorAll('.bottom-nav .nav-btn');
-    const locationsContainer = document.getElementById('list-container');
-    const locationsButton = document.querySelector('.bottom-nav .nav-btn[data-section="locations"]');
-    
-    // Locations container starts visible, so Locations button should be active
-    let locationsVisible = true;
-    
-    navButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const section = this.getAttribute('data-section');
-        
-        // Remove active class from all buttons
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        
-        if (section === 'locations') {
-          // Toggle locations visibility
-          locationsVisible = !locationsVisible;
-          
-          if (locationsVisible) {
-            locationsContainer.style.display = 'flex';
-            this.classList.add('active');
+  function parseCSVRow(row) {
+    var fields = [];
+    var current = '';
+    var inQuotes = false;
+    for (var i = 0; i < row.length; i++) {
+      var ch = row[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (row[i + 1] === '"') {
+            current += '"';
+            i++;
           } else {
-            locationsContainer.style.display = 'none';
-            this.classList.remove('active');
+            inQuotes = false;
           }
         } else {
-          // All sections accessible - no gating
-          this.classList.add('active');
-          
-          // Show placeholder for other sections
-          alert(`${section.charAt(0).toUpperCase() + section.slice(1)} section - Coming soon!`);
-          
-          // If locations was visible, hide it since we're switching sections
-          if (locationsVisible) {
-            locationsContainer.style.display = 'none';
-            locationsVisible = false;
-          }
+          current += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === ',') {
+          fields.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+    }
+    fields.push(current);
+    return fields;
+  }
+
+  function parseCSV(text) {
+    var lines = text.split('\n').filter(function (l) {
+      return l.trim().length > 0;
+    });
+    var headers = parseCSVRow(lines[0]);
+    var results = [];
+    for (var i = 1; i < lines.length; i++) {
+      var values = parseCSVRow(lines[i]);
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) {
+        obj[headers[j].trim()] = (values[j] || '').trim();
+      }
+      results.push(obj);
+    }
+    return results;
+  }
+
+  // =============================================
+  // Initialization
+  // =============================================
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    initMap();
+    loadQuests();
+    initNav();
+  }
+
+  // =============================================
+  // Map
+  // =============================================
+
+  function initMap() {
+    var isMobile = window.innerWidth <= 768;
+
+    map = new mapboxgl.Map({
+      container: 'map',
+      center: RISHIKESH_CENTER,
+      zoom: isMobile ? 11.5 : 12.5,
+      minZoom: 10,
+      maxZoom: 17,
+      maxBounds: MAP_BOUNDS,
+      pitch: 0,
+      bearing: 0,
+      attributionControl: false,
+      fadeDuration: 0,
+    });
+
+    // Disable heavy stuff for performance
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
+    map.touchPitch.disable();
+
+    map.on('load', function () {
+      map.setConfigProperty('basemap', 'lightPreset', 'night');
+      map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+      map.setConfigProperty('basemap', 'showPlaceLabels', false);
+      map.setConfigProperty('basemap', 'showRoadLabels', false);
+      map.setConfigProperty('basemap', 'showTransitLabels', false);
+
+      // Register marker images for each category (canvas → GPU texture)
+      var categories = Object.keys(CATEGORIES);
+      for (var i = 0; i < categories.length; i++) {
+        var cat = categories[i];
+        var meta = CATEGORIES[cat];
+        map.addImage('marker-' + cat, createMarkerImage(meta.emoji, meta.color), { pixelRatio: 2 });
+      }
+      map.addImage('marker-default', createMarkerImage('📍', '#ff6b35'), { pixelRatio: 2 });
+
+      // GeoJSON source — updated by renderMarkers()
+      map.addSource('quest-markers', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+
+      // Main marker icons (GPU-rendered, no DOM jitter)
+      map.addLayer({
+        id: 'quest-markers-layer',
+        type: 'symbol',
+        source: 'quest-markers',
+        layout: {
+          'icon-image': ['coalesce',
+            ['image', ['concat', 'marker-', ['get', 'category']]],
+            ['image', 'marker-default']
+          ],
+          'icon-size': 1,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+          'icon-anchor': 'center',
+        },
+      });
+
+      // Badge background circle for grouped locations
+      map.addLayer({
+        id: 'quest-badge-bg',
+        type: 'circle',
+        source: 'quest-markers',
+        filter: ['>', ['get', 'count'], 1],
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#ff6b35',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#0a0a0a',
+          'circle-translate': [10, -10],
+        },
+      });
+
+      // Badge count text
+      map.addLayer({
+        id: 'quest-badge-text',
+        type: 'symbol',
+        source: 'quest-markers',
+        filter: ['>', ['get', 'count'], 1],
+        layout: {
+          'text-field': ['to-string', ['get', 'count']],
+          'text-size': 9,
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-translate': [10, -10],
+        },
+      });
+
+      // Click: open popup on marker, close on empty area
+      map.on('click', function (e) {
+        var features = map.queryRenderedFeatures(e.point, {
+          layers: ['quest-markers-layer', 'quest-badge-bg'],
+        });
+        if (features.length > 0) {
+          var slug = features[0].properties.slug;
+          var coords = features[0].geometry.coordinates.slice();
+          var group = filteredQuests.filter(function (q) {
+            return q.slug === slug;
+          });
+          if (group.length) openPopup(coords, group);
+        } else if (currentPopup) {
+          currentPopup.remove();
+          currentPopup = null;
         }
       });
-    });
-  }
 
-  // =====================================
-  // Geolocation Functions
-  // =====================================
-  
-  function getUserLocation() {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported by this browser.'));
-        return;
+      // Pointer cursor on hover
+      map.on('mouseenter', 'quest-markers-layer', function () {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'quest-markers-layer', function () {
+        map.getCanvas().style.cursor = '';
+      });
+
+      mapReady = true;
+
+      // Render quests that loaded before the map was ready
+      if (pendingRender) {
+        renderMarkers(pendingRender);
+        pendingRender = null;
       }
 
-      // Update loading message
-      const loadingOverlay = document.getElementById("location-loading");
-      const loadingText = loadingOverlay.querySelector('p');
-      const loadingSubtext = loadingOverlay.querySelector('small');
-      
-      loadingText.textContent = 'Requesting your location...';
-      loadingSubtext.textContent = 'Please allow location access to center the map on your area';
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLocation = [
-            position.coords.longitude,
-            position.coords.latitude
-          ];
-          loadingText.textContent = 'Location found! Loading map...';
-          loadingSubtext.textContent = 'Centering map on your location';
-          resolve(userLocation);
-        },
-        (error) => {
-          loadingText.textContent = 'Location access denied';
-          loadingSubtext.textContent = 'Using default location (Bangalore). You can still browse locations!';
-          
-          // Show manual location button
-          const manualBtn = document.getElementById('manual-location-btn');
-          manualBtn.style.display = 'block';
-          manualBtn.onclick = () => {
-            manualBtn.style.display = 'none';
-            loadingText.textContent = 'Requesting your location...';
-            loadingSubtext.textContent = 'Please allow location access to center the map on your area';
-            
-            setTimeout(() => {
-              getUserLocation()
-                .then((userLocation) => {
-                  mapCenter = userLocation;
-                  userLocationCoords = userLocation;
-                  loadingOverlay.classList.add('hidden');
-                  document.getElementById('map').innerHTML = '';
-                  initializeMap();
-                })
-                .catch(() => {
-                  loadingText.textContent = 'Location unavailable';
-                  loadingSubtext.textContent = 'Using Bangalore as default location';
-                  setTimeout(() => {
-                    reject(error);
-                  }, 1500);
-                });
-            }, 500);
-          };
-          
-          setTimeout(() => {
-            reject(error);
-          }, 1500);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 600000 // 10 minutes cache
-        }
-      );
+      hideLoading();
     });
+
+    // Fallback: hide loading after 4s even if map is slow
+    setTimeout(hideLoading, 4000);
   }
 
-  // =====================================
-  // Map Initialization
-  // =====================================
-  
-  // Try to get user location, fallback to default if not available
-  const loadingOverlay = document.getElementById("location-loading");
-  
-  // Simplified loading screen logic - hide after 3 seconds regardless
-  setTimeout(() => {
-    loadingOverlay.style.display = 'none';
-    if (!map) {
-      initializeMap();
-    }
-  }, 3000);
-  
-  getUserLocation()
-    .then((userLocation) => {
-      mapCenter = userLocation;
-      userLocationCoords = userLocation;
-    })
-    .catch((error) => {
-      mapCenter = defaultCenter;
-    })
-    .finally(() => {
-      // Hide loading screen and initialize map
-      loadingOverlay.style.display = 'none';
-      if (!map) {
-      initializeMap();
-      }
-    });
+  function hideLoading() {
+    var el = document.getElementById('loading-screen');
+    if (!el || el.classList.contains('hidden')) return;
+    el.classList.add('hidden');
+    setTimeout(function () {
+      el.style.display = 'none';
+    }, 600);
+  }
 
-  function initializeMap() {
-    map = new mapboxgl.Map({
-      container: "map",
-      center: mapCenter,
-      zoom: initialZoom,
-      pitch: 60,
-      bearing: -30,
-    });
+  // =============================================
+  // Load & Parse Quests from CSV
+  // =============================================
 
-    map.on('load', () => {
-        map.setConfigProperty("basemap", "lightPreset", "night");
-        map.setConfigProperty("basemap", "showPointOfInterestLabels", false);
-        map.setConfigProperty("basemap", "showPlaceLabels", false);
-        map.setConfigProperty("basemap", "showRoadLabels", false);
-        map.setConfigProperty("basemap", "showTransitLabels", false);
-
-        // Add 3D building layer
-        map.addLayer({
-            'id': '3d-buildings',
-            'source': 'composite',
-            'source-layer': 'building',
-            'filter': ['==', 'extrude', 'true'],
-            'type': 'fill-extrusion',
-            'minzoom': 15,
-            'paint': {
-              'fill-extrusion-color': '#aaa',
-              'fill-extrusion-height': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15, 0, 15.05,
-                ['get', 'height']
-              ],
-              'fill-extrusion-base': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15, 0, 15.05,
-                ['get', 'min_height']
-              ],
-              'fill-extrusion-opacity': 0.6
-            }
-        });
-    });
-
-    // Add user location marker if available
-    if (userLocationCoords) {
-      const userMarker = new mapboxgl.Marker({
-        color: '#e67e5c',
-        scale: 1.5
+  function loadQuests() {
+    fetch('rishikesh_quests.csv')
+      .then(function (resp) {
+        return resp.text();
       })
-      .setLngLat(userLocationCoords)
-      .addTo(map);
+      .then(function (text) {
+        var rows = parseCSV(text);
 
-      const userPopup = new mapboxgl.Popup({ offset: 25, closeButton: false })
-        .setHTML('<strong>📍 Your Location</strong><br><small>This is where you are</small>');
-      
-      userMarker.setPopup(userPopup);
-      
-      // Show popup briefly when map loads
-      setTimeout(() => {
-        userPopup.addTo(map);
-        setTimeout(() => {
-          userPopup.remove();
-        }, 3000);
-      }, 1000);
-    }
-
-    // =====================================
-    // Static Locations Data
-    // =====================================
-    
-    const staticLocations = [
-        {
-            'Location Name': 'Zo San Francisco',
-            'Host': 'Zo Team',
-            'Date & Time': new Date().toISOString(),
-            'Location': 'San Francisco, CA',
-            'Latitude': 37.781903723962394,
-            'Longitude': -122.40089759537564,
-            'Location URL': 'https://lu.ma/calendar/cal-3YNnBTToy9fnnjQ',
-            'Area': 'sanfrancisco'
-        },
-        {
-            'Location Name': 'Zo Koramangala',
-            'Host': 'Zo Team',
-            'Date & Time': new Date().toISOString(),
-            'Location': 'Koramangala, Bangalore',
-            'Latitude': 12.933043207450986,
-            'Longitude': 77.63463845876512,
-            'Location URL': 'https://lu.ma/calendar/cal-ZVonmjVxLk7F2oM',
-            'Area': 'bangalore'
-        },
-        {
-            'Location Name': 'Zo Whitefield',
-            'Host': 'Zo Team',
-            'Date & Time': new Date().toISOString(),
-            'Location': 'Whitefield, Bangalore',
-            'Latitude': 12.972625067533576,
-            'Longitude': 77.74648576165846,
-            'Location URL': 'https://lu.ma/calendar/cal-ZVonmjVxLk7F2oM',
-            'Area': 'bangalore'
-        },
-        {
-            'Location Name': 'Lossfunk',
-            'Host': 'Community Partner',
-            'Date & Time': new Date().toISOString(),
-            'Location': 'Bangalore',
-            'Latitude': 12.981365725590802,
-            'Longitude': 77.64077028864327,
-            'Location URL': '#',
-            'Area': 'bangalore'
-        },
-        {
-            'Location Name': 'Shipyard',
-            'Host': 'Community Partner',
-            'Date & Time': new Date().toISOString(),
-            'Location': 'Bangalore',
-            'Latitude': 12.982406246118158,
-            'Longitude': 77.64026430077156,
-            'Location URL': '#',
-            'Area': 'bangalore'
-        },
-        {
-            'Location Name': 'The Hub',
-            'Host': 'Community Partner',
-            'Date & Time': new Date().toISOString(),
-            'Location': 'Bangalore',
-            'Latitude': 12.979966981737082,
-            'Longitude': 77.60760484972558,
-            'Location URL': '#',
-            'Area': 'bangalore'
-        }
-    ];
-
-    // =====================================
-    // Location Loading and Display
-    // =====================================
-    
-    let allLocations = []; // Store all locations to enable filtering
-
-  function formatDateTime(dateTimeString) {
-    const date = new Date(dateTimeString);
-    const options = {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    };
-    return date
-      .toLocaleDateString("en-US", options)
-      .replace(",", "")
-      .replace(" at", "•");
-  }
-
-  // Track open popups to manage auto-close behavior
-  // currentOpenPopup is now declared at module level
-
-  function addMarkersAndListItems(data) {
-    const locationList = document.getElementById("location-list");
-    locationList.innerHTML = '';
-
-    // Clear existing markers
-    if (map && map.getLayer && map.getLayer('locations')) {
-        map.removeLayer('locations');
-        map.removeSource('locations');
-    }
-
-    data.forEach(function (row) {
-      if (row.Latitude && row.Longitude) {
-        // Add map marker
-        const marker = new mapboxgl.Marker({
-            color: row.Area === 'sanfrancisco' ? '#e67e5c' : '#d4a574',
-            scale: 1.2
-        })
-          .setLngLat([parseFloat(row.Longitude), parseFloat(row.Latitude)])
-          .addTo(map);
-
-        const formattedDate = new Date(row["Date & Time"]).toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short', 
-          day: 'numeric',
-          year: 'numeric'
-        });
-
-        // Create popup content
-        const visitButton = row["Location URL"] && row["Location URL"] !== '#' ? 
-            `<a href="${row["Location URL"]}" target="_blank" class="popup-register-btn">Visit Now</a>` : 
-            '';
-            
-        const popupContent = `
-          <div class="glass-popup">
-            <h3>${row["Location Name"] || "N/A"}</h3>
-            <p>🏢 ${row.Host || "N/A"}</p>
-            <p>📍 ${row.Location || "N/A"}</p>
-            ${visitButton}
-          </div>
-        `;
-
-        const popup = new mapboxgl.Popup({
-            className: 'glass-popup-container',
-            closeButton: true,
-            offset: [0, -15], // Reduced offset to prevent logo overlap
-            maxWidth: '280px' // Limit popup width
-          })
-          .setLngLat(marker.getLngLat())
-          .setHTML(popupContent);
-
-        marker.setPopup(popup);
-        
-        // Handle marker click to auto-close previous popups
-        marker.on('click', () => {
-          if (currentOpenPopup && currentOpenPopup !== popup) {
-            currentOpenPopup.remove();
-          }
-          currentOpenPopup = popup;
-          
-          popup.on('close', () => {
-            if (currentOpenPopup === popup) {
-              currentOpenPopup = null;
-            }
+        allQuests = [];
+        for (var i = 0; i < rows.length; i++) {
+          var r = rows[i];
+          if (!r.slug || !COORDS[r.slug] || !r.category) continue;
+          allQuests.push({
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            difficulty: r.difficulty,
+            reward: parseInt(r.reward, 10) || 0,
+            category: r.category,
+            slug: r.slug,
+            lng: COORDS[r.slug][0],
+            lat: COORDS[r.slug][1],
+            meta: CATEGORIES[r.category] || { emoji: '📍', color: '#ff6b35' },
           });
-        });
+        }
 
-        // Create list item
-        const listItem = document.createElement("li");
-        listItem.className = "location-item";
-        
-        const listVisitButton = row["Location URL"] && row["Location URL"] !== '#' ? 
-            `<a href="${row["Location URL"]}" target="_blank" class="register-btn" onclick="event.stopPropagation()">Visit</a>` : 
-            '';
-        
-        listItem.innerHTML = `
-          <div class="location-details">
-              <h3>${row["Location Name"] || "N/A"}</h3>
-              <p class="location-host">🏢 ${row.Host || "N/A"}</p>
-              <p class="location-address">📍 ${row.Location || "N/A"}</p>
-          </div>
-          ${listVisitButton}
-        `;
-        
-        locationList.appendChild(listItem);
-
-        // Add click handler for list item
-        listItem.addEventListener("click", function (e) {
-          if (e.target.tagName !== "A") {
-            // Close any currently open popup
-            if (currentOpenPopup) {
-              currentOpenPopup.remove();
-            }
-            
-            map.flyTo({
-              center: [parseFloat(row.Longitude), parseFloat(row.Latitude)],
-              zoom: 18,
-            });
-            popup.addTo(map);
-            
-            // Track this popup as the currently open one
-            currentOpenPopup = popup;
-            
-            // Listen for popup close events
-            popup.on('close', () => {
-              if (currentOpenPopup === popup) {
-                currentOpenPopup = null;
-              }
-            });
-          }
-        });
-      }
-    });
+        filteredQuests = allQuests;
+        renderCategoryFilters();
+        renderQuests(filteredQuests);
+        renderMarkers(filteredQuests);
+      })
+      .catch(function (err) {
+        console.error('Failed to load quests:', err);
+      });
   }
 
-    function filterLocations(searchTerm) {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        const filtered = allLocations.filter(location => {
-            const locationName = (location['Location Name'] || '').toLowerCase();
-            const locationAddress = (location['Location'] || '').toLowerCase();
-            const locationHost = (location['Host'] || '').toLowerCase();
-            return locationName.includes(lowerCaseSearchTerm) || 
-                   locationAddress.includes(lowerCaseSearchTerm) ||
-                   locationHost.includes(lowerCaseSearchTerm);
-        });
-        addMarkersAndListItems(filtered);
-    }
+  // =============================================
+  // Category Filters
+  // =============================================
 
-    function filterLocationsByArea(areaFilter, searchTerm = '') {
-        let filtered = allLocations;
-        
-        // Apply area filter
-        if (areaFilter !== 'all') {
-            filtered = filtered.filter(location => {
-                return location.Area === areaFilter;
-            });
-        }
-        
-        // Apply search filter if search term exists
-        if (searchTerm) {
-            const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            filtered = filtered.filter(location => {
-                const locationName = (location['Location Name'] || '').toLowerCase();
-                const locationAddress = (location['Location'] || '').toLowerCase();
-                const locationHost = (location['Host'] || '').toLowerCase();
-                return locationName.includes(lowerCaseSearchTerm) || 
-                       locationAddress.includes(lowerCaseSearchTerm) ||
-                       locationHost.includes(lowerCaseSearchTerm);
-            });
-        }
-        
-        addMarkersAndListItems(filtered);
-    }
-
-    // =====================================
-    // Static Location Loading
-    // =====================================
-    
-    function loadStaticLocations() {
-        try {
-            allLocations = staticLocations;
-            addMarkersAndListItems(allLocations);
-            console.log('✅ Static locations loaded successfully!');
-        } catch (error) {
-            console.error('Error loading static locations:', error);
-            const locationList = document.getElementById("location-list");
-            locationList.innerHTML = '<li style="text-align: center; padding: 20px;">Unable to load locations. Please try again later.</li>';
-        }
-    }
-
-    // Load static locations instead of fetching from calendar
-    loadStaticLocations();
-
-
-    // =====================================
-    // Search and Filter Logic
-    // =====================================
-
-    const searchInput = document.getElementById('search-input');
-    searchInput.addEventListener('input', (e) => {
-        const activeLocationFilter = document.querySelector('.location-filters-container .location-filter-btn.active').dataset.location;
-        filterLocationsByArea(activeLocationFilter, e.target.value);
-    });
-
-    // Search Overlay Logic
-    const searchIcon = document.querySelector('.search-icon-container');
-    const searchOverlay = document.getElementById('search-overlay');
-    const searchOverlayInput = document.getElementById('search-overlay-input');
-    const closeSearchBtn = document.querySelector('.close-search-btn');
-
-    searchIcon.addEventListener('click', () => {
-        searchOverlay.classList.add('visible');
-        searchOverlayInput.focus();
-    });
-
-    closeSearchBtn.addEventListener('click', () => {
-        searchOverlay.classList.remove('visible');
-    });
-
-    searchOverlayInput.addEventListener('input', (e) => {
-        const activeLocationFilter = document.querySelector('.location-filters-container .location-filter-btn.active').dataset.location;
-        filterLocationsByArea(activeLocationFilter, e.target.value);
-    });
-
-
-    // Location filter functionality
-    const locationFilterBtns = document.querySelectorAll('.location-filters-container .location-filter-btn');
-    locationFilterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all buttons
-            locationFilterBtns.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
-            
-            // Get current search term and apply both filters
-            const searchTerm = searchOverlayInput.value;
-            const locationFilter = btn.dataset.location;
-            filterLocationsByArea(locationFilter, searchTerm);
-        });
-    });
-
-    const viewAllBtn = document.querySelector('.view-all-btn');
-    viewAllBtn.addEventListener('click', () => {
-        // Show all locations and zoom out to see all areas
-        filterLocationsByArea('all', '');
-        
-        // Calculate bounds to fit all locations
-        if (allLocations.length > 0) {
-            const bounds = new mapboxgl.LngLatBounds();
-            allLocations.forEach(location => {
-                bounds.extend([location.Longitude, location.Latitude]);
-            });
-            map.fitBounds(bounds, { padding: 50 });
-        }
-    });
-
-
-    // =====================================
-    // Responsive View Management
-    // =====================================
-    
-    function setView() {
-      const listContainer = document.getElementById("list-container");
-      listContainer.style.display = "flex";
-      if (map) {
-        map.resize();
+  function renderCategoryFilters() {
+    var container = document.getElementById('category-filters');
+    var seen = {};
+    var cats = [];
+    for (var i = 0; i < allQuests.length; i++) {
+      var c = allQuests[i].category;
+      if (!seen[c]) {
+        seen[c] = true;
+        cats.push(c);
       }
     }
 
-    setView();
-    window.addEventListener("resize", setView);
+    var html = '<button class="cat-btn active" data-category="all">All</button>';
+    for (var j = 0; j < cats.length; j++) {
+      var m = CATEGORIES[cats[j]] || {};
+      html +=
+        '<button class="cat-btn" data-category="' +
+        cats[j] +
+        '">' +
+        (m.emoji || '') +
+        ' ' +
+        cats[j] +
+        '</button>';
+    }
+    container.innerHTML = html;
 
-      // Initialize bottom navigation
-  initializeBottomNav();
-
-  // =====================================
-  // Supabase Initialization
-  // =====================================
-  
-  // Removed Supabase client initialization as it's not in use.
-  
-    // =====================================
-    // Location Overview Functions
-    // =====================================
-    
-    // Calendar view removed since we're showing static locations, not time-based events
-    // The "View All" button now shows all locations on the map instead
+    container.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cat-btn');
+      if (!btn) return;
+      var all = container.querySelectorAll('.cat-btn');
+      for (var k = 0; k < all.length; k++) all[k].classList.remove('active');
+      btn.classList.add('active');
+      activeCategory = btn.dataset.category;
+      filterAndRender();
+    });
   }
-}
 
-// Check if DOM is already loaded, otherwise wait for it
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
+  function filterAndRender() {
+    if (activeCategory === 'all') {
+      filteredQuests = allQuests;
     } else {
-  initializeApp();
+      filteredQuests = allQuests.filter(function (q) {
+        return q.category === activeCategory;
+      });
+    }
+    renderQuests(filteredQuests);
+    renderMarkers(filteredQuests);
+  }
+
+  // =============================================
+  // Quest List (horizontal cards)
+  // =============================================
+
+  function renderQuests(quests) {
+    var list = document.getElementById('quest-list');
+    var countEl = document.getElementById('quest-count');
+    countEl.textContent = quests.length;
+
+    var html = '';
+    for (var i = 0; i < quests.length; i++) {
+      var q = quests[i];
+      html +=
+        '<li class="quest-card" data-idx="' + i + '" style="animation-delay:' + (i * 0.04) + 's">' +
+          '<div class="quest-card-cat">' +
+            '<span class="cat-tag" style="background:' + q.meta.color + '22;color:' + q.meta.color + '">' +
+              q.meta.emoji + ' ' + q.category +
+            '</span>' +
+            '<span class="quest-reward">⚡ ' + q.reward + ' ZO</span>' +
+          '</div>' +
+          '<h3 class="quest-card-title">' + q.title + '</h3>' +
+          '<span class="quest-card-diff">' + q.difficulty + '</span>' +
+        '</li>';
+    }
+    list.innerHTML = html;
+
+    // Attach click handlers
+    var cards = list.querySelectorAll('.quest-card');
+    for (var j = 0; j < cards.length; j++) {
+      cards[j].addEventListener('click', onCardClick);
+    }
+  }
+
+  function onCardClick() {
+    var idx = parseInt(this.dataset.idx, 10);
+    var quest = filteredQuests[idx];
+    if (!quest) return;
+    flyToQuest(quest);
+  }
+
+  // =============================================
+  // Map Markers (grouped by slug = physical location)
+  // =============================================
+
+  function renderMarkers(quests) {
+    // Buffer data if map layers aren't ready yet
+    if (!mapReady) {
+      pendingRender = quests;
+      return;
+    }
+
+    // Group by slug (one marker per physical location)
+    var groups = {};
+    for (var j = 0; j < quests.length; j++) {
+      var q = quests[j];
+      if (!groups[q.slug]) groups[q.slug] = [];
+      groups[q.slug].push(q);
+    }
+
+    var features = [];
+    var slugs = Object.keys(groups);
+    for (var k = 0; k < slugs.length; k++) {
+      var slug = slugs[k];
+      var group = groups[slug];
+      var coords = COORDS[slug];
+      if (!coords) continue;
+
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: coords },
+        properties: {
+          slug: slug,
+          category: group[0].category,
+          count: group.length,
+          title: group[0].title,
+        },
+      });
+    }
+
+    // Update GeoJSON source — Mapbox handles the GPU re-render
+    map.getSource('quest-markers').setData({
+      type: 'FeatureCollection',
+      features: features,
+    });
+  }
+
+  // =============================================
+  // Map Popups
+  // =============================================
+
+  function openPopup(coords, quests) {
+    if (currentPopup) {
+      currentPopup.remove();
+      currentPopup = null;
+    }
+
+    var locationName = quests[0].title;
+    var rows = '';
+    for (var i = 0; i < quests.length; i++) {
+      var q = quests[i];
+      rows +=
+        '<div class="popup-quest-row">' +
+          '<span class="popup-cat-label">' + q.meta.emoji + ' ' + q.category + '</span>' +
+          '<span class="popup-zo">⚡ ' + q.reward + ' ZO</span>' +
+        '</div>';
+    }
+
+    var html =
+      '<div class="quest-popup">' +
+        '<div class="popup-location-name">' + locationName + '</div>' +
+        '<p class="popup-desc">' + quests[0].description + '</p>' +
+        rows +
+      '</div>';
+
+    currentPopup = new mapboxgl.Popup({
+      closeButton: true,
+      offset: 20,
+      maxWidth: '280px',
+      className: 'quest-popup-container',
+    })
+      .setLngLat(coords)
+      .setHTML(html)
+      .addTo(map);
+  }
+
+  function flyToQuest(quest) {
+    if (currentPopup) {
+      currentPopup.remove();
+      currentPopup = null;
+    }
+
+    map.flyTo({
+      center: [quest.lng, quest.lat],
+      zoom: 15,
+      duration: 800,
+      essential: true,
+    });
+
+    var sameSlug = filteredQuests.filter(function (q) {
+      return q.slug === quest.slug;
+    });
+
+    setTimeout(function () {
+      openPopup([quest.lng, quest.lat], sameSlug);
+    }, 850);
+  }
+
+  // =============================================
+  // Bottom Navigation
+  // =============================================
+
+  function initNav() {
+    var btns = document.querySelectorAll('.bottom-nav .nav-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function () {
+        var section = this.dataset.section;
+        if (section === 'events') {
+          showToast('Events — Coming Soon!');
+          return;
         }
+        var all = document.querySelectorAll('.bottom-nav .nav-btn');
+        for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
+        this.classList.add('active');
+      });
+    }
+  }
+
+  function showToast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(function () {
+      el.classList.remove('show');
+    }, 2000);
+  }
+})();
