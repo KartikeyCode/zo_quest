@@ -196,13 +196,6 @@
   }
 
   async function doSignUp(phone, password, username) {
-    // Check username uniqueness
-    var check = await sb.from('profiles')
-      .select('id')
-      .eq('username', username)
-      .maybeSingle();
-    if (check.data) throw { message: 'Username already taken' };
-
     var result = await sb.auth.signUp({
       email: phone + '@zoquest.app',
       password: password,
@@ -210,7 +203,15 @@
     });
     if (result.error) throw result.error;
     currentUser = result.data.user;
-    await loadProfile();
+    try {
+      await loadProfile();
+    } catch (err) {
+      // loadProfile throws if username is taken (unique constraint)
+      currentUser = null;
+      userProfile = null;
+      showAuthModal();
+      throw err;
+    }
     onAuthSuccess();
   }
 
@@ -270,6 +271,12 @@
           .insert({ id: currentUser.id, username: username, zo_balance: 0 })
           .select()
           .single();
+        if (ins.error && ins.error.code === '23505') {
+          // Unique constraint violation — username taken
+          await sb.auth.signOut();
+          currentUser = null;
+          throw { message: 'Username already taken' };
+        }
         userProfile = ins.data || { id: currentUser.id, username: username, zo_balance: 0 };
       }
     } catch (err) {
