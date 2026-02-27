@@ -86,6 +86,67 @@
   var activeCategory = 'all';
   var mapReady = false;
   var pendingRender = null;
+  var userLocation = null;   // {lng, lat} from device GPS
+  var fakeLocation = null;   // {lng, lat} for testing
+  var fakeMode = false;
+  var userMarker = null;     // mapboxgl.Marker for blue dot
+
+  // =============================================
+  // Geolocation Utilities
+  // =============================================
+
+  function getEffectiveLocation() {
+    return fakeLocation || userLocation;
+  }
+
+  function haversineDistance(lat1, lon1, lat2, lon2) {
+    var R = 6371000;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function updateUserMarker() {
+    var loc = getEffectiveLocation();
+    if (!loc || !map) return;
+
+    if (!userMarker) {
+      var el = document.createElement('div');
+      el.className = 'user-location-dot';
+      el.innerHTML = '<div class="user-dot-ping"></div><div class="user-dot-core"></div>';
+      userMarker = new mapboxgl.Marker({ element: el })
+        .setLngLat([loc.lng, loc.lat])
+        .addTo(map);
+    } else {
+      userMarker.setLngLat([loc.lng, loc.lat]);
+    }
+  }
+
+  function initGeolocation() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.watchPosition(
+      function (pos) {
+        userLocation = { lng: pos.coords.longitude, lat: pos.coords.latitude };
+        updateUserMarker();
+      },
+      function (err) { console.warn('Geolocation:', err.message); },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+  }
+
+  function initFakeLocation() {
+    var btn = document.getElementById('fake-location-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      fakeMode = !fakeMode;
+      btn.classList.toggle('active', fakeMode);
+      showToast(fakeMode ? 'Tap map to set fake location' : 'Fake location off');
+    });
+  }
 
   // =============================================
   // Marker Image Generator (canvas → addImage for GPU rendering)
@@ -181,6 +242,8 @@
     initMap();
     loadQuests();
     initNav();
+    initGeolocation();
+    initFakeLocation();
   }
 
   // =============================================
@@ -281,8 +344,14 @@
         },
       });
 
-      // Click: open popup on marker, close on empty area
+      // Click: fake location mode OR open popup on marker
       map.on('click', function (e) {
+        if (fakeMode) {
+          fakeLocation = { lng: e.lngLat.lng, lat: e.lngLat.lat };
+          updateUserMarker();
+          showToast('Fake location set');
+          return;
+        }
         var features = map.queryRenderedFeatures(e.point, {
           layers: ['quest-markers-layer', 'quest-badge-bg'],
         });
@@ -442,7 +511,7 @@
             '<span class="cat-tag" style="background:' + q.meta.color + '22;color:' + q.meta.color + '">' +
               q.meta.emoji + ' ' + q.category +
             '</span>' +
-            '<span class="quest-reward">⚡ ' + q.reward + ' ZO</span>' +
+            '<span class="quest-reward">$' + q.reward + '</span>' +
           '</div>' +
           '<h3 class="quest-card-title">' + q.title + '</h3>' +
           '<span class="quest-card-diff">' + q.difficulty + '</span>' +
@@ -527,8 +596,23 @@
       rows +=
         '<div class="popup-quest-row">' +
           '<span class="popup-cat-label">' + q.meta.emoji + ' ' + q.category + '</span>' +
-          '<span class="popup-zo">⚡ ' + q.reward + ' ZO</span>' +
+          '<span class="popup-zo">$' + q.reward + '</span>' +
         '</div>';
+    }
+
+    // Build claim section based on proximity
+    var claimHTML = '';
+    var loc = getEffectiveLocation();
+    if (!loc) {
+      claimHTML = '<div class="popup-claim no-location"><span class="claim-status">Enable location to claim</span></div>';
+    } else {
+      var dist = haversineDistance(loc.lat, loc.lng, coords[1], coords[0]);
+      if (dist <= 50) {
+        claimHTML = '<div class="popup-claim claimable"><button class="claim-btn">Claim Quest</button></div>';
+      } else {
+        var distStr = dist < 1000 ? Math.round(dist) + 'm' : (dist / 1000).toFixed(1) + 'km';
+        claimHTML = '<div class="popup-claim not-claimable"><span class="claim-status">' + distStr + ' away — get within 50m</span></div>';
+      }
     }
 
     var html =
@@ -536,6 +620,7 @@
         '<div class="popup-location-name">' + locationName + '</div>' +
         '<p class="popup-desc">' + quests[0].description + '</p>' +
         rows +
+        claimHTML +
       '</div>';
 
     currentPopup = new mapboxgl.Popup({
@@ -547,6 +632,16 @@
       .setLngLat(coords)
       .setHTML(html)
       .addTo(map);
+
+    // Attach claim button handler
+    var claimBtn = currentPopup.getElement().querySelector('.claim-btn');
+    if (claimBtn) {
+      claimBtn.addEventListener('click', function () {
+        showToast('Quest Claimed!');
+        currentPopup.remove();
+        currentPopup = null;
+      });
+    }
   }
 
   function flyToQuest(quest) {
