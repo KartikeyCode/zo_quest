@@ -12,11 +12,15 @@
   mapboxgl.accessToken = cfg.MAPBOX_TOKEN ||
     'pk.eyJ1Ijoia3VzaGFsem8iLCJhIjoiY20wcDZtNjUwMDFxNzJpcjYxZjlsN2g3NiJ9.d194ACznKNqKJNfzKyanNQ';
 
+  var DEFAULT_CENTER = [77.09, 28.46]; // GGN/Delhi area
   var RISHIKESH_CENTER = [78.32, 30.12];
-  var MAP_BOUNDS = [
-    [78.05, 29.90],
-    [78.60, 30.35],
+
+  // City regions for location-based quest filtering (center [lng, lat], radius in km)
+  var CITY_REGIONS = [
+    { name: 'Rishikesh', center: [78.32, 30.12], radius: 30 },
+    { name: 'Delhi-NCR',  center: [77.15, 28.52], radius: 60 },
   ];
+  var CLAIM_RANGE = 160; // meters — proximity required to claim a quest
 
   var CATEGORIES = {
     'Ganga Arti':        { emoji: '🪔', color: '#ff6b35' },
@@ -69,13 +73,24 @@
     'mount-bistro':                [78.3868258, 30.134132599999997],
     'ram-jhula':                   [78.3141266, 30.1239532],
     'janki-setu':                  [78.3085417, 30.1165093],
-    // Zostel nodes
+    // Zostel nodes — Rishikesh
     'zostel-tapovan':              [78.3232438999119, 30.129955351101362],
     'zostel-laxman-jhula':         [78.32791337494515, 30.123124507013824],
-    // Event quest locations
+    // Zostel nodes — GGN/Delhi
+    'zostel-delhi':                [77.21747319613176, 28.645738941529338],
+    'zostel-noida':                [77.37845723023318, 28.58320909546981],
+    'ggnxzo':                      [77.0928244302017, 28.462318714748413],
+    'zostel-hq':                   [77.07277230941678, 28.459785918314914],
+    // Event quest locations — Rishikesh
     'zostel-lj-checkin':           [78.32791337494515, 30.123124507013824],
     'zostel-lj-vibe':              [78.32791337494515, 30.123124507013824],
     'ganga-kinare-subah':          [78.32862668465614, 30.123785277441403],
+    // Event quest locations — GGN
+    'clip-em-good-ggnxzo':         [77.0928244302017, 28.462318714748413],
+    'clip-em-good-hq':             [77.07277230941678, 28.459785918314914],
+    'play-ball-hq':                [77.07277230941678, 28.459785918314914],
+    'refuel-ggnxzo':               [77.0928244302017, 28.462318714748413],
+    'refuel-hq':                   [77.07277230941678, 28.459785918314914],
   };
 
   // =============================================
@@ -98,10 +113,12 @@
   var userProfile = null;
   var authIsSignUp = true;
   var cameraStream = null;
+  var cameraFacing = 'environment'; // 'environment' = back, 'user' = front
   var cameraClaimCtx = null;
   var activeSection = 'quests';
 
   var ZOSTEL_NODES = [
+    // Rishikesh
     {
       title: 'Zostel Rishikesh (Tapovan)',
       slug: 'zostel-tapovan',
@@ -116,14 +133,70 @@
       lng: 78.32791337494515,
       description: 'Steps away from the iconic Laxman Jhula bridge.',
     },
+    // GGN / Delhi
+    {
+      title: 'Zostel Delhi',
+      slug: 'zostel-delhi',
+      lat: 28.645738941529338,
+      lng: 77.21747319613176,
+      description: 'Zostel property in the heart of Delhi.',
+    },
+    {
+      title: 'Zostel Noida',
+      slug: 'zostel-noida',
+      lat: 28.58320909546981,
+      lng: 77.37845723023318,
+      description: 'Zostel property in Noida.',
+    },
+    {
+      title: 'GGNxZo',
+      slug: 'ggnxzo',
+      lat: 28.462318714748413,
+      lng: 77.0928244302017,
+      description: 'The Gurgaon Zo hub — events, vibes, and quests.',
+    },
+    {
+      title: 'ZostelHQ',
+      slug: 'zostel-hq',
+      lat: 28.459785918314914,
+      lng: 77.07277230941678,
+      description: 'Zostel Headquarters — where it all begins.',
+    },
   ];
 
   // =============================================
   // Geolocation Utilities
   // =============================================
 
+  var detectedCity = null; // set when user location resolves
+
   function getEffectiveLocation() {
     return fakeLocation || userLocation;
+  }
+
+  function detectCity(loc) {
+    if (!loc) return null;
+    for (var i = 0; i < CITY_REGIONS.length; i++) {
+      var r = CITY_REGIONS[i];
+      var d = haversineDistance(loc.lat, loc.lng, r.center[1], r.center[0]);
+      if (d <= r.radius * 1000) return r.name;
+    }
+    return null;
+  }
+
+  function getLocalQuests() {
+    if (!detectedCity) return allQuests; // no location yet — show all
+    var city = detectedCity;
+    return allQuests.filter(function (q) {
+      for (var i = 0; i < CITY_REGIONS.length; i++) {
+        var r = CITY_REGIONS[i];
+        var d = haversineDistance(q.lat, q.lng, r.center[1], r.center[0]);
+        if (d <= r.radius * 1000) {
+          return r.name === city;
+        }
+      }
+      return false; // quest not in any known region — hide
+    });
   }
 
   function haversineDistance(lat1, lon1, lat2, lon2) {
@@ -158,6 +231,11 @@
       function (pos) {
         userLocation = { lng: pos.coords.longitude, lat: pos.coords.latitude };
         updateUserMarker();
+        var newCity = detectCity(userLocation);
+        if (newCity !== detectedCity) {
+          detectedCity = newCity;
+          filterAndRender();
+        }
       },
       function (err) { console.warn('Geolocation:', err.message); },
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
@@ -417,10 +495,11 @@
     video.style.display = 'block';
     confirmBar.style.display = 'none';
     shutterBar.style.display = 'flex';
+    cameraFacing = 'environment';
 
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: cameraFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
       video.srcObject = cameraStream;
@@ -429,6 +508,25 @@
       console.error('Camera error:', err);
       showToast('Camera access denied or not available');
       cameraClaimCtx = null;
+    }
+  }
+
+  async function flipCamera() {
+    cameraFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    // Stop current stream
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(function (t) { t.stop(); });
+    }
+    var video = document.getElementById('camera-video');
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: cameraFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      video.srcObject = cameraStream;
+    } catch (err) {
+      console.error('Camera flip error:', err);
+      showToast('Could not switch camera');
     }
   }
 
@@ -502,6 +600,7 @@
     document.getElementById('camera-shutter-btn').addEventListener('click', capturePhoto);
     document.getElementById('camera-retake-btn').addEventListener('click', retakePhoto);
     document.getElementById('camera-use-btn').addEventListener('click', usePhoto);
+    document.getElementById('camera-flip-btn').addEventListener('click', flipCamera);
     document.getElementById('camera-close-btn').addEventListener('click', function () {
       cameraClaimCtx = null;
       closeCamera();
@@ -950,11 +1049,10 @@
 
     map = new mapboxgl.Map({
       container: 'map',
-      center: RISHIKESH_CENTER,
-      zoom: isMobile ? 11.5 : 12.5,
-      minZoom: 10,
+      center: DEFAULT_CENTER,
+      zoom: isMobile ? 11 : 12,
+      minZoom: 5,
       maxZoom: 17,
-      maxBounds: MAP_BOUNDS,
       pitch: 0,
       bearing: 0,
       attributionControl: false,
@@ -1037,6 +1135,11 @@
         if (fakeMode) {
           fakeLocation = { lng: e.lngLat.lng, lat: e.lngLat.lat };
           updateUserMarker();
+          var newCity = detectCity(fakeLocation);
+          if (newCity !== detectedCity) {
+            detectedCity = newCity;
+            filterAndRender();
+          }
           showToast('Fake location set');
           return;
         }
@@ -1137,7 +1240,7 @@
           });
         }
 
-        filteredQuests = allQuests;
+        filteredQuests = getLocalQuests();
         renderCategoryFilters();
         renderQuests(filteredQuests);
         renderMarkers(filteredQuests);
@@ -1198,10 +1301,11 @@
   }
 
   function filterAndRender() {
+    var local = getLocalQuests();
     if (activeCategory === 'all') {
-      filteredQuests = allQuests;
+      filteredQuests = local;
     } else {
-      filteredQuests = allQuests.filter(function (q) {
+      filteredQuests = local.filter(function (q) {
         return q.category === activeCategory;
       });
     }
@@ -1321,12 +1425,12 @@
       claimHTML = '<div class="popup-claim no-location"><span class="claim-status">Enable location to claim</span></div>';
     } else {
       var dist = haversineDistance(loc.lat, loc.lng, coords[1], coords[0]);
-      if (dist <= 50) {
+      if (dist <= CLAIM_RANGE) {
         withinRange = true;
         claimHTML = '<div class="popup-claim claimable" id="claim-section"><span class="claim-status">Checking...</span></div>';
       } else {
         var distStr = dist < 1000 ? Math.round(dist) + 'm' : (dist / 1000).toFixed(1) + 'km';
-        claimHTML = '<div class="popup-claim not-claimable"><span class="claim-status">' + distStr + ' away — get within 50m</span></div>';
+        claimHTML = '<div class="popup-claim not-claimable"><span class="claim-status">' + distStr + ' away — get within ' + CLAIM_RANGE + 'm</span></div>';
       }
     }
 
@@ -1367,7 +1471,7 @@
       essential: true,
     });
 
-    var sameSlug = filteredQuests.filter(function (q) {
+    var sameSlug = allQuests.filter(function (q) {
       return q.slug === quest.slug;
     });
 
@@ -1412,7 +1516,7 @@
         html += '<div class="node-events-section">';
         for (var e = 0; e < events.length; e++) {
           html +=
-            '<div class="node-event-row">' +
+            '<div class="node-event-row clickable-event" data-event-slug="' + events[e].slug + '">' +
               '<span class="node-event-emoji">' + evMeta.emoji + '</span>' +
               '<span class="node-event-title">' + events[e].title + '</span>' +
               '<span class="quest-reward">$' + events[e].reward + '</span>' +
@@ -1424,13 +1528,27 @@
     }
     list.innerHTML = html;
 
+    // Click on node card (not on event row) → fly to node
     var cards = list.querySelectorAll('.quest-card');
     for (var j = 0; j < cards.length; j++) {
-      cards[j].addEventListener('click', function () {
+      cards[j].addEventListener('click', function (evt) {
+        // If click was on an event row, don't fly to node
+        if (evt.target.closest('.clickable-event')) return;
         var idx = parseInt(this.dataset.nodeIdx, 10);
         var node = ZOSTEL_NODES[idx];
         if (!node) return;
         flyToNode(node);
+      });
+    }
+
+    // Click on event row → fly to that event quest and open claim popup
+    var eventRows = list.querySelectorAll('.clickable-event');
+    for (var er = 0; er < eventRows.length; er++) {
+      eventRows[er].addEventListener('click', function (evt) {
+        evt.stopPropagation();
+        var slug = this.dataset.eventSlug;
+        var quest = allQuests.filter(function (q) { return q.slug === slug; })[0];
+        if (quest) flyToQuest(quest);
       });
     }
   }
@@ -1500,9 +1618,9 @@
         '<div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Events here</div>';
       for (var i = 0; i < events.length; i++) {
         html +=
-          '<div class="popup-quest-row">' +
+          '<div class="popup-quest-row popup-event-link" data-event-slug="' + events[i].slug + '" style="cursor:pointer;transition:background 0.2s;border-radius:6px;padding:7px 4px;margin:0 -4px">' +
             '<span class="popup-cat-label">' + evMeta.emoji + ' ' + events[i].title + '</span>' +
-            '<span class="popup-zo">$' + events[i].reward + '</span>' +
+            '<span class="popup-zo">$' + events[i].reward + ' →</span>' +
           '</div>';
       }
       html += '</div>';
@@ -1519,6 +1637,17 @@
       .setLngLat([node.lng, node.lat])
       .setHTML(html)
       .addTo(map);
+
+    // Bind click events on popup event rows
+    var popupEl = currentPopup.getElement();
+    var evLinks = popupEl.querySelectorAll('.popup-event-link');
+    for (var ei = 0; ei < evLinks.length; ei++) {
+      evLinks[ei].addEventListener('click', function () {
+        var slug = this.dataset.eventSlug;
+        var quest = allQuests.filter(function (q) { return q.slug === slug; })[0];
+        if (quest) flyToQuest(quest);
+      });
+    }
   }
 
   // =============================================
