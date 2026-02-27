@@ -529,7 +529,6 @@ html {
   height: 64px;
   margin: 0 auto 18px;
   display: block;
-  animation: spinGif 0.6s linear infinite;
 }
 
 .loading-inner p {
@@ -844,20 +843,43 @@ html {
   padding: 0;
   max-height: 200px;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.1) transparent;
 }
 
 .profile-claim-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
+  gap: 10px;
 }
 
 .profile-claim-row:last-child {
   border-bottom: none;
+}
+
+.profile-claim-row.has-selfie {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s;
+  border-radius: 8px;
+  padding: 10px 8px;
+  margin: 0 -8px;
+}
+
+.profile-claim-row.has-selfie:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-claim-row.has-selfie:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-claim-photo {
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .profile-claim-info {
@@ -915,6 +937,21 @@ html {
 
 .profile-logout-btn:hover {
   background: rgba(255, 71, 87, 0.2);
+}
+
+/* =============================================
+   Selfie Viewer Modal
+   ============================================= */
+.selfie-viewer-card {
+  max-width: 400px;
+}
+
+.selfie-viewer-img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  object-fit: cover;
+  max-height: 60vh;
 }
 
 /* =============================================

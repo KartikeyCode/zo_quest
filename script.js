@@ -90,6 +90,7 @@
   var mapReady = false;
   var pendingRender = null;
   var userLocation = null;
+  var DEBUG_FAKE_LOCATION = false; // Set to true to enable fake location button for testing
   var fakeLocation = null;
   var fakeMode = false;
   var userMarker = null;
@@ -166,6 +167,11 @@
   function initFakeLocation() {
     var btn = document.getElementById('fake-location-btn');
     if (!btn) return;
+
+    if (!DEBUG_FAKE_LOCATION) {
+      btn.style.display = 'none';
+      return;
+    }
 
     btn.addEventListener('click', function () {
       fakeMode = !fakeMode;
@@ -585,7 +591,7 @@
     if (!sb || !currentUser) return [];
     try {
       var result = await sb.from('quest_claims')
-        .select('slug, reward, claimed_at')
+        .select('slug, reward, claimed_at, selfie_url')
         .eq('user_id', currentUser.id)
         .order('claimed_at', { ascending: false })
         .limit(50);
@@ -652,8 +658,12 @@
       }
       var date = new Date(c.claimed_at);
       var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      var hasSelfie = c.selfie_url ? true : false;
+      var selfieAttr = hasSelfie ? ' data-selfie-url="' + c.selfie_url + '" data-title="' + title.replace(/"/g, '&quot;') + '"' : '';
+      var selfieClass = hasSelfie ? ' has-selfie' : '';
       html +=
-        '<li class="profile-claim-row">' +
+        '<li class="profile-claim-row' + selfieClass + '"' + selfieAttr + '>' +
+          (hasSelfie ? '<span class="profile-claim-photo">📸</span>' : '') +
           '<div class="profile-claim-info">' +
             '<span class="profile-claim-title">' + title + '</span>' +
             '<span class="profile-claim-date">' + dateStr + '</span>' +
@@ -662,6 +672,14 @@
         '</li>';
     }
     claimsList.innerHTML = html;
+
+    // Attach click handlers for selfie viewing
+    var rows = claimsList.querySelectorAll('.has-selfie');
+    for (var k = 0; k < rows.length; k++) {
+      rows[k].addEventListener('click', function () {
+        openSelfieViewer(this.dataset.title, this.dataset.selfieUrl);
+      });
+    }
   }
 
   function initProfileUI() {
@@ -684,6 +702,40 @@
       document.getElementById('profile-modal').style.display = 'none';
       doSignOut();
     });
+
+    // Selfie viewer close
+    document.getElementById('selfie-viewer-close').addEventListener('click', function () {
+      document.getElementById('selfie-viewer').style.display = 'none';
+    });
+    document.getElementById('selfie-viewer').addEventListener('click', function (e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+
+    // Selfie share button
+    document.getElementById('selfie-share-btn').addEventListener('click', function () {
+      var title = document.getElementById('selfie-viewer-title').textContent;
+      var imgUrl = document.getElementById('selfie-viewer-img').src;
+      if (navigator.share) {
+        navigator.share({
+          title: title + ' — Zo Quest',
+          text: 'Check out my quest selfie from ' + title + ' on Zo Quest Rishikesh!',
+          url: imgUrl,
+        }).catch(function () {});
+      } else {
+        // Fallback: copy URL
+        navigator.clipboard.writeText(imgUrl).then(function () {
+          showToast('Link copied!');
+        }).catch(function () {
+          showToast('Could not share');
+        });
+      }
+    });
+  }
+
+  function openSelfieViewer(title, selfieUrl) {
+    document.getElementById('selfie-viewer-title').textContent = title;
+    document.getElementById('selfie-viewer-img').src = selfieUrl;
+    document.getElementById('selfie-viewer').style.display = 'flex';
   }
 
   // =============================================
@@ -1110,6 +1162,10 @@
         cats.push(c);
       }
     }
+
+    // Move Event to front so it appears right after "All"
+    var evIdx = cats.indexOf('Event');
+    if (evIdx > 0) { cats.splice(evIdx, 1); cats.unshift('Event'); }
 
     var html = '<button class="cat-btn active" data-category="all">All</button>';
     for (var j = 0; j < cats.length; j++) {
