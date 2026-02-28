@@ -134,20 +134,20 @@
       description: 'Steps away from the iconic Laxman Jhula bridge.',
     },
     // GGN / Delhi
-    {
-      title: 'Zostel Delhi',
-      slug: 'zostel-delhi',
-      lat: 28.645738941529338,
-      lng: 77.21747319613176,
-      description: 'Zostel property in the heart of Delhi.',
-    },
-    {
-      title: 'Zostel Noida',
-      slug: 'zostel-noida',
-      lat: 28.58320909546981,
-      lng: 77.37845723023318,
-      description: 'Zostel property in Noida.',
-    },
+    // {
+    //   title: 'Zostel Delhi',
+    //   slug: 'zostel-delhi',
+    //   lat: 28.645738941529338,
+    //   lng: 77.21747319613176,
+    //   description: 'Zostel property in the heart of Delhi.',
+    // },
+    // {
+    //   title: 'Zostel Noida',
+    //   slug: 'zostel-noida',
+    //   lat: 28.58320909546981,
+    //   lng: 77.37845723023318,
+    //   description: 'Zostel property in Noida.',
+    // },
     {
       title: 'GGNxZo',
       slug: 'ggnxzo',
@@ -317,6 +317,8 @@
     document.getElementById('zo-balance-area').style.display = 'none';
     document.getElementById('user-menu-btn').style.display = 'none';
     document.getElementById('profile-modal').style.display = 'none';
+    var signInBtn = document.getElementById('sign-in-btn');
+    if (signInBtn) signInBtn.style.display = 'flex';
     showAuthModal();
   }
 
@@ -333,6 +335,8 @@
         'User';
       menuBtn.textContent = name;
     }
+    var signInBtn = document.getElementById('sign-in-btn');
+    if (signInBtn) signInBtn.style.display = 'none';
   }
 
   // =============================================
@@ -426,6 +430,19 @@
   async function checkAndShowClaim(slug, totalReward, quests) {
     var section = currentPopup ? currentPopup.getElement().querySelector('#claim-section') : null;
     if (!section) return;
+
+    // Check if quest hasn't started yet (active_from)
+    var af = quests[0].active_from;
+    if (af && new Date() < af) {
+      var h = af.getHours();
+      var m = af.getMinutes();
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      var h12 = h % 12 || 12;
+      var timeStr = h12 + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+      section.innerHTML = '<span class="claim-status">Starts at ' + timeStr + '</span>';
+      section.className = 'popup-claim not-claimable';
+      return;
+    }
 
     if (!currentUser) {
       section.innerHTML = '<button class="claim-btn">📸 Take Photo to Claim ($ZO ' + totalReward + ')</button>';
@@ -646,8 +663,7 @@
     try {
       var result = await sb.from('profiles')
         .select('username, zo_balance')
-        .order('zo_balance', { ascending: false })
-        .limit(20);
+        .order('zo_balance', { ascending: false });
       return result.data || [];
     } catch (err) {
       console.error('Leaderboard error:', err);
@@ -908,6 +924,11 @@
     document.getElementById('auth-toggle-link').addEventListener('click', function (e) {
       e.preventDefault();
       setAuthMode(!authIsSignUp);
+    });
+
+    // Sign-in fallback button opens auth modal
+    document.getElementById('sign-in-btn').addEventListener('click', function () {
+      showAuthModal();
     });
 
     // User menu btn opens profile
@@ -1224,6 +1245,16 @@
           }
           if (!coords && r.slug && COORDS[r.slug]) coords = COORDS[r.slug];
           if (!r.slug || !coords || !r.category) continue;
+
+          // Parse active_from / active_until but keep quest visible
+          var activeFrom = (r.active_from && r.active_from.trim()) ? new Date(r.active_from.trim()) : null;
+          var activeUntil = (r.active_until && r.active_until.trim()) ? new Date(r.active_until.trim()) : null;
+          if (activeFrom && isNaN(activeFrom.getTime())) activeFrom = null;
+          if (activeUntil && isNaN(activeUntil.getTime())) activeUntil = null;
+
+          // Hide expired quests entirely
+          if (activeUntil && new Date() > activeUntil) continue;
+
           allQuests.push({
             id: r.id,
             title: r.title,
@@ -1236,6 +1267,7 @@
             slug: r.slug,
             lng: coords[0],
             lat: coords[1],
+            active_from: activeFrom,
             meta: CATEGORIES[r.category] || { emoji: '📍', color: '#ff6b35' },
           });
         }
@@ -1256,33 +1288,7 @@
 
   function renderCategoryFilters() {
     var container = document.getElementById('category-filters');
-    var seen = {};
-    var cats = [];
-    for (var i = 0; i < allQuests.length; i++) {
-      var c = allQuests[i].category;
-      if (!seen[c]) {
-        seen[c] = true;
-        cats.push(c);
-      }
-    }
-
-    // Move Event to front so it appears right after "All"
-    var evIdx = cats.indexOf('Event');
-    if (evIdx > 0) { cats.splice(evIdx, 1); cats.unshift('Event'); }
-
-    var html = '<button class="cat-btn active" data-category="all">All</button>';
-    for (var j = 0; j < cats.length; j++) {
-      var m = CATEGORIES[cats[j]] || {};
-      html +=
-        '<button class="cat-btn" data-category="' +
-        cats[j] +
-        '">' +
-        (m.emoji || '') +
-        ' ' +
-        cats[j] +
-        '</button>';
-    }
-    container.innerHTML = html;
+    updateCategoryPills();
 
     container.addEventListener('click', function (e) {
       var btn = e.target.closest('.cat-btn');
@@ -1300,8 +1306,49 @@
     });
   }
 
+  function updateCategoryPills() {
+    var container = document.getElementById('category-filters');
+    var local = getLocalQuests();
+    var seen = {};
+    var cats = [];
+    for (var i = 0; i < local.length; i++) {
+      var c = local[i].category;
+      if (!seen[c]) {
+        seen[c] = true;
+        cats.push(c);
+      }
+    }
+
+    // Move Event to front so it appears right after "All"
+    var evIdx = cats.indexOf('Event');
+    if (evIdx > 0) { cats.splice(evIdx, 1); cats.unshift('Event'); }
+
+    var html = '<button class="cat-btn' + (activeCategory === 'all' ? ' active' : '') + '" data-category="all">All</button>';
+    for (var j = 0; j < cats.length; j++) {
+      var m = CATEGORIES[cats[j]] || {};
+      var isActive = activeCategory === cats[j] ? ' active' : '';
+      html +=
+        '<button class="cat-btn' + isActive + '" data-category="' +
+        cats[j] +
+        '">' +
+        (m.emoji || '') +
+        ' ' +
+        cats[j] +
+        '</button>';
+    }
+    container.innerHTML = html;
+
+    // If active category no longer exists in this city, reset to "all"
+    if (activeCategory !== 'all' && !seen[activeCategory]) {
+      activeCategory = 'all';
+      var allBtn = container.querySelector('[data-category="all"]');
+      if (allBtn) allBtn.classList.add('active');
+    }
+  }
+
   function filterAndRender() {
     var local = getLocalQuests();
+    updateCategoryPills();
     if (activeCategory === 'all') {
       filteredQuests = local;
     } else {
@@ -1309,8 +1356,19 @@
         return q.category === activeCategory;
       });
     }
+    sortByDistance(filteredQuests);
     renderQuests(filteredQuests);
     renderMarkers(filteredQuests);
+  }
+
+  function sortByDistance(quests) {
+    var loc = getEffectiveLocation();
+    if (!loc) return;
+    quests.sort(function (a, b) {
+      var da = haversineDistance(loc.lat, loc.lng, a.lat, a.lng);
+      var db = haversineDistance(loc.lat, loc.lng, b.lat, b.lng);
+      return da - db;
+    });
   }
 
   // =============================================
