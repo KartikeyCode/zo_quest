@@ -105,7 +105,7 @@
   var mapReady = false;
   var pendingRender = null;
   var userLocation = null;
-  var DEBUG_FAKE_LOCATION = true; // Set to true to enable fake location button for testing
+  var DEBUG_FAKE_LOCATION = false; // Set to true to enable fake location button for testing
   var fakeLocation = null;
   var fakeMode = false;
   var userMarker = null;
