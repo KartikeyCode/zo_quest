@@ -105,7 +105,7 @@
   var mapReady = false;
   var pendingRender = null;
   var userLocation = null;
-  var DEBUG_FAKE_LOCATION = false; // Set to true to enable fake location button for testing
+  var DEBUG_FAKE_LOCATION = true; // Set to true to enable fake location button for testing
   var fakeLocation = null;
   var fakeMode = false;
   var userMarker = null;
@@ -430,6 +430,19 @@
   async function checkAndShowClaim(slug, totalReward, quests) {
     var section = currentPopup ? currentPopup.getElement().querySelector('#claim-section') : null;
     if (!section) return;
+
+    // Check if quest hasn't started yet (active_from)
+    var af = quests[0].active_from;
+    if (af && new Date() < af) {
+      var h = af.getHours();
+      var m = af.getMinutes();
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      var h12 = h % 12 || 12;
+      var timeStr = h12 + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+      section.innerHTML = '<span class="claim-status">Starts at ' + timeStr + '</span>';
+      section.className = 'popup-claim not-claimable';
+      return;
+    }
 
     if (!currentUser) {
       section.innerHTML = '<button class="claim-btn">📸 Take Photo to Claim ($ZO ' + totalReward + ')</button>';
@@ -1233,16 +1246,14 @@
           if (!coords && r.slug && COORDS[r.slug]) coords = COORDS[r.slug];
           if (!r.slug || !coords || !r.category) continue;
 
-          // Time-gate: skip quests that haven't started yet or have expired
-          var now = new Date();
-          if (r.active_from && r.active_from.trim()) {
-            var from = new Date(r.active_from.trim());
-            if (!isNaN(from.getTime()) && now < from) continue;
-          }
-          if (r.active_until && r.active_until.trim()) {
-            var until = new Date(r.active_until.trim());
-            if (!isNaN(until.getTime()) && now > until) continue;
-          }
+          // Parse active_from / active_until but keep quest visible
+          var activeFrom = (r.active_from && r.active_from.trim()) ? new Date(r.active_from.trim()) : null;
+          var activeUntil = (r.active_until && r.active_until.trim()) ? new Date(r.active_until.trim()) : null;
+          if (activeFrom && isNaN(activeFrom.getTime())) activeFrom = null;
+          if (activeUntil && isNaN(activeUntil.getTime())) activeUntil = null;
+
+          // Hide expired quests entirely
+          if (activeUntil && new Date() > activeUntil) continue;
 
           allQuests.push({
             id: r.id,
@@ -1256,6 +1267,7 @@
             slug: r.slug,
             lng: coords[0],
             lat: coords[1],
+            active_from: activeFrom,
             meta: CATEGORIES[r.category] || { emoji: '📍', color: '#ff6b35' },
           });
         }
