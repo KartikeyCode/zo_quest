@@ -302,6 +302,24 @@ html {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.node-events-section::-webkit-scrollbar {
+  width: 3px;
+}
+
+.node-events-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.node-events-section::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
 }
 
 .node-event-row {
@@ -327,7 +345,7 @@ html {
   cursor: pointer;
   border-radius: 6px;
   padding: 4px 6px;
-  margin: 0 -6px;
+  margin: 0;
   transition: background 0.2s;
 }
 
@@ -1075,6 +1093,21 @@ html {
   max-width: 360px;
   max-height: 85vh;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.modal-card::-webkit-scrollbar {
+  width: 3px;
+}
+
+.modal-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-card::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
 }
 
 .modal-header {
