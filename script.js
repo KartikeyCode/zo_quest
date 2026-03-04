@@ -640,10 +640,7 @@
         return null;
       }
       var urlResult = sb.storage.from('selfies').getPublicUrl(path);
-      var publicUrl = urlResult.data.publicUrl;
-      // Rewrite direct supabase.co URL to go through our proxy
-      publicUrl = publicUrl.replace(/https:\/\/[^/]+\.supabase\.co/, SUPABASE_URL);
-      return publicUrl;
+      return urlResult.data.publicUrl;
     } catch (err) {
       console.error('Selfie upload failed:', err);
       return null;
@@ -851,8 +848,6 @@
   }
 
   function openSelfieViewer(title, selfieUrl) {
-    // Rewrite old supabase.co URLs through proxy
-    selfieUrl = selfieUrl.replace(/https:\/\/[^/]+\.supabase\.co/, SUPABASE_URL);
     document.getElementById('selfie-viewer-title').textContent = title;
     document.getElementById('selfie-viewer-img').src = selfieUrl;
     document.getElementById('selfie-viewer').style.display = 'flex';
